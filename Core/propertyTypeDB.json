@@ -1,0 +1,323 @@
+{
+  "length": [
+    "plus",
+    "object"
+  ],
+  "set": [
+    "function"
+  ],
+  "get": [
+    "function"
+  ],
+  "has": [
+    "function"
+  ],
+  "deleteProperty": [
+    "function"
+  ],
+  "toString": [
+    "function"
+  ],
+  "valueOf": [
+    "function"
+  ],
+  "asUintN": [
+    "function"
+  ],
+  "bind": [
+    "function"
+  ],
+  "prototype": [
+    "object",
+    "array",
+    "function"
+  ],
+  "getOwnPropertyDescriptors": [
+    "function"
+  ],
+  "push": [
+    "function"
+  ],
+  "reverse": [
+    "function"
+  ],
+  "constructor": [
+    "function",
+    "nonconstructor"
+  ],
+  "fromCharCode": [
+    "function"
+  ],
+  "__defineGetter__": [
+    "function"
+  ],
+  "includes": [
+    "function"
+  ],
+  "isInteger": [
+    "function"
+  ],
+  "EPSILON": [
+    "double"
+  ],
+  "__lookupSetter__": [
+    "function"
+  ],
+  "pop": [
+    "function"
+  ],
+  "map": [
+    "function"
+  ],
+  "__lookupGetter__": [
+    "function"
+  ],
+  "slice": [
+    "function"
+  ],
+  "freeze": [
+    "function"
+  ],
+  "propertyIsEnumerable": [
+    "function"
+  ],
+  "lastIndexOf": [
+    "function"
+  ],
+  "asyncIterator": [
+    "symbol"
+  ],
+  "from": [
+    "function"
+  ],
+  "raw": [
+    "function"
+  ],
+  "defineProperty": [
+    "function"
+  ],
+  "split": [
+    "symbol",
+    "array"
+  ],
+  "search": [
+    "symbol"
+  ],
+  "assign": [
+    "function"
+  ],
+  "of": [
+    "function"
+  ],
+  "flatMap": [
+    "function"
+  ],
+  "fromCodePoint": [
+    "function"
+  ],
+  "asIntN": [
+    "function"
+  ],
+  "forEach": [
+    "function"
+  ],
+  "isPrototypeOf": [
+    "function"
+  ],
+  "fill": [
+    "function"
+  ],
+  "MIN_VALUE": [
+    "double"
+  ],
+  "toLocaleString": [
+    "function"
+  ],
+  "filter": [
+    "function"
+  ],
+  "some": [
+    "function"
+  ],
+  "unscopables": [
+    "symbol"
+  ],
+  "splice": [
+    "function"
+  ],
+  "NaN": [
+    "double"
+  ],
+  "findIndex": [
+    "function"
+  ],
+  "call": [
+    "function"
+  ],
+  "MIN_SAFE_INTEGER": [
+    "int"
+  ],
+  "MAX_SAFE_INTEGER": [
+    "plus"
+  ],
+  "isConcatSpreadable": [
+    "symbol"
+  ],
+  "reduce": [
+    "function"
+  ],
+  "join": [
+    "function"
+  ],
+  "isFinite": [
+    "function"
+  ],
+  "seal": [
+    "function"
+  ],
+  "entries": [
+    "function"
+  ],
+  "isNaN": [
+    "function"
+  ],
+  "is": [
+    "function"
+  ],
+  "keys": [
+    "function"
+  ],
+  "matchAll": [
+    "symbol"
+  ],
+  "parseInt": [
+    "function"
+  ],
+  "isArray": [
+    "function"
+  ],
+  "indexOf": [
+    "function"
+  ],
+  "hasInstance": [
+    "symbol"
+  ],
+  "preventExtensions": [
+    "function"
+  ],
+  "getPrototypeOf": [
+    "function"
+  ],
+  "unshift": [
+    "function"
+  ],
+  "toStringTag": [
+    "symbol"
+  ],
+  "NEGATIVE_INFINITY": [
+    "double"
+  ],
+  "species": [
+    "symbol"
+  ],
+  "apply": [
+    "function"
+  ],
+  "every": [
+    "function"
+  ],
+  "values": [
+    "function"
+  ],
+  "toPrimitive": [
+    "symbol"
+  ],
+  "iterator": [
+    "symbol"
+  ],
+  "defineProperties": [
+    "function"
+  ],
+  "__defineSetter__": [
+    "function"
+  ],
+  "setPrototypeOf": [
+    "function"
+  ],
+  "isSafeInteger": [
+    "function"
+  ],
+  "find": [
+    "function"
+  ],
+  "parseFloat": [
+    "function"
+  ],
+  "getOwnPropertyDescriptor": [
+    "function"
+  ],
+  "isExtensible": [
+    "function"
+  ],
+  "create": [
+    "function"
+  ],
+  "hasOwnProperty": [
+    "function"
+  ],
+  "for": [
+    "function"
+  ],
+  "sort": [
+    "function"
+  ],
+  "keyFor": [
+    "function"
+  ],
+  "isSealed": [
+    "function"
+  ],
+  "concat": [
+    "function"
+  ],
+  "fromEntries": [
+    "function"
+  ],
+  "copyWithin": [
+    "function"
+  ],
+  "MAX_VALUE": [
+    "plus"
+  ],
+  "next": [
+    "function"
+  ],
+  "shift": [
+    "function"
+  ],
+  "replace": [
+    "symbol"
+  ],
+  "flat": [
+    "function"
+  ],
+  "getOwnPropertyNames": [
+    "function"
+  ],
+  "reduceRight": [
+    "function"
+  ],
+  "POSITIVE_INFINITY": [
+    "double"
+  ],
+  "isFrozen": [
+    "function"
+  ],
+  "getOwnPropertySymbols": [
+    "function"
+  ],
+  "match": [
+    "symbol",
+    "function"
+  ]
+}

@@ -1,0 +1,21 @@
+diff --git a/node_modules/escodegen/escodegen.js b/node_modules/escodegen/escodegen.js
+index 26e7538..67a66db 100644
+--- a/node_modules/escodegen/escodegen.js
++++ b/node_modules/escodegen/escodegen.js
+@@ -2028,7 +2028,7 @@
+         },
+ 
+         FunctionExpression: function (expr, precedence, flags) {
+-            var result = [
++            var result = ["(",
+                 generateAsyncPrefix(expr, true),
+                 'function'
+             ];
+@@ -2039,6 +2039,7 @@
+                 result.push(generateStarSuffix(expr) || space);
+             }
+             result.push(this.generateFunctionBody(expr));
++            result.push(")")
+             return result;
+         },
+ 

@@ -1,0 +1,23 @@
+diff --git a/src/d8/d8.cc b/src/d8/d8.cc
+index 5c98e72200..a9490c705f 100644
+--- a/src/d8/d8.cc
++++ b/src/d8/d8.cc
+@@ -3648,6 +3648,8 @@ int Shell::Main(int argc, char* argv[]) {
+     PerIsolateData data(isolate);
+     debug::SetConsoleDelegate(isolate, &console);
+ 
++    while(argc){
++      getchar();
+     if (options.trace_enabled) {
+       platform::tracing::TraceConfig* trace_config;
+       if (options.trace_config) {
+@@ -3742,6 +3744,9 @@ int Shell::Main(int argc, char* argv[]) {
+     evaluation_context_.Reset();
+     stringify_function_.Reset();
+     CollectGarbage(isolate);
++    argc = (int)write(0,"DONE",4);
++
++    }
+   }
+   OnExit(isolate);
+   V8::Dispose();

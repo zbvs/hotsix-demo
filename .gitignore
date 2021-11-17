@@ -1,0 +1,7 @@
+# production
+**/build
+**/.idea/
+node_modules/
+fuzz_result/
+
+
