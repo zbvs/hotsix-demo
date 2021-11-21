@@ -3,9 +3,7 @@ const storagePath = "./fuzz_result/";
 const shellPathFuzz = "./v8_build/normal_build/d8";
 const shellPathNormal = "./v8_build/normal_build/d8";
 
-const config = {
-
-};
+const config = {};
 config.needThisListPath = "Core/needThisList.json";
 config.propertyTypeDBPath = "Core/propertyTypeDB.json";
 
@@ -19,12 +17,12 @@ config.doWriteNT = false;
 config.doUpdateType = true;
 config.debug = false;
 config.maxExecutionRound = 100;
-config.watchDogFreq = 1000*1;
+config.watchDogFreq = 1000 * 1;
 config.totallines = 30;
-    config.initiallines = 7;
+config.initiallines = 7;
 config.function_totallines = 8;
 config.function_initiallines = 2;
-config.maxExecutionTime = 1000*5;
+config.maxExecutionTime = 1000 * 5;
 config.arguments = ["--debug-code",
     "--expose-gc",
     "--predictable",

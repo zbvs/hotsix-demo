@@ -3,8 +3,7 @@ const Type = require("./Type");
 const util = require("./../../Util");
 
 
-
-function initSandbox(runtime,generator) {
+function initSandbox(runtime, generator) {
 
     Type.vmAnalyzeCode(runtime.Sandbox, "this_ = this");
     Type.vmAnalyzeCode(runtime.Sandbox, "apply_ = Function.prototype.apply");
@@ -19,7 +18,6 @@ function initSandbox(runtime,generator) {
     runtime.addBuiltinFunction(Function_, "Function", Type.baseTypes.constructor);
 
 
-
     ////////////////////////////////////////////////////////////
     let Object_ = Type.vmAnalyzeCode(runtime.Sandbox, "Object");
     runtime.Sandbox.operand1 = Object_;
@@ -30,7 +28,7 @@ function initSandbox(runtime,generator) {
     let Array_ = Type.vmAnalyzeCode(runtime.Sandbox, "Array");
     runtime.Sandbox.operand1 = Array_;
     Type.vmAnalyzeCode(runtime.Sandbox, "Array = operand1;");
-    runtime.addBuiltinFunction(Array_,"Array", Type.baseTypes.constructor);
+    runtime.addBuiltinFunction(Array_, "Array", Type.baseTypes.constructor);
 
     const FDescInit = require("./V8FDescInit").FDescInit;
     FDescInit(runtime);
@@ -51,7 +49,7 @@ function EnvInit(){
 
 
 module.exports = {
-    initSandbox:initSandbox,
+    initSandbox: initSandbox,
 }
 
 

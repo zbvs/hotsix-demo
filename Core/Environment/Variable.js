@@ -2,8 +2,8 @@ const util = require("./../../Util");
 const debug = require("./../../Config").debug;
 
 class Variable {
-    constructor(varName, isArgument = false){
-        if(debug && (typeof varName) !== "object"){
+    constructor(varName, isArgument = false) {
+        if (debug && (typeof varName) !== "object") {
             util.unreachable();
         }
 
@@ -19,7 +19,7 @@ class Variable {
 }
 
 Variable.createVarName = (boxedName, originName) => {
-    return {boxed:boxedName,origin:originName};
+    return {boxed: boxedName, origin: originName};
 };
 
 module.exports = Variable;

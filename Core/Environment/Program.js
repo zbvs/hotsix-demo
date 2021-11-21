@@ -3,7 +3,7 @@ const util = require("../../Util.js");
 const env = require("./Environment.js");
 const debug = require("./../../Config").debug;
 
-function createProgram(generator){
+function createProgram(generator) {
     let program = {};
     program.ast = es6.createNode("Program", 1);
     program.runtime = env.createRuntime(program);
@@ -13,6 +13,6 @@ function createProgram(generator){
 
 
 module.exports = {
-    createProgram : createProgram
+    createProgram: createProgram
 }
 

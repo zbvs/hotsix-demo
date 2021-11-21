@@ -42,52 +42,50 @@ let max_elements_length = 2;
 let max_method_definition = 2;
 
 
-
-
 var generator = {
-    GenBoolean(){
-        return !util.randRange(0,2);
+    GenBoolean() {
+        return !util.randRange(0, 2);
     },
-    GenPlus(){
-        let sel = util.randRange(0,1+1+3);
+    GenPlus() {
+        let sel = util.randRange(0, 1 + 1 + 3);
         switch (true) {
             case (sel < 1): {
                 return util.randRange(0, 0x10000);
             }
-            case (sel < 1+1): {
+            case (sel < 1 + 1): {
                 return util.chooseRandom(env.interestingIntegers);
             }
-            case (sel < 1+1+3): {
+            case (sel < 1 + 1 + 3): {
                 let target = util.chooseRandom(env.interestingIntegersStrict)
-                target = target * util.randRange(1,4);
-                if(sel < 1+1+1)
+                target = target * util.randRange(1, 4);
+                if (sel < 1 + 1 + 1)
                     target = target - 1;
-                else if(sel < 1+1+2)
-                    target = target  +1;
+                else if (sel < 1 + 1 + 2)
+                    target = target + 1;
                 return target;
             }
 
         }
     },
-    GenDouble(){
-        return Math.random()*0x1000;
+    GenDouble() {
+        return Math.random() * 0x1000;
     },
-    GenString(){
+    GenString() {
         //("t" + Math.random().toString(36).substring(2, util.randRange(1,5)));
         return util.chooseRandom(env.interestingStrings);
 
     },
-    GenSymbol(){
+    GenSymbol() {
         return util.chooseRandom(env.interestingSymbols);
     },
-    GenBigInt(){
+    GenBigInt() {
         return BigInt(generator.GenPlus());
     },
-    GeneratorLiteralList:[Type.baseTypes.int,Type.baseTypes.plus,Type.baseTypes.double,Type.baseTypes.boolean,Type.baseTypes.string,Type.baseTypes.bigint,Type.baseTypes.symbol],
-    SymbolLiteral(symbol_name){
+    GeneratorLiteralList: [Type.baseTypes.int, Type.baseTypes.plus, Type.baseTypes.double, Type.baseTypes.boolean, Type.baseTypes.string, Type.baseTypes.bigint, Type.baseTypes.symbol],
+    SymbolLiteral(symbol_name) {
 
-        let boxed_curNode =  es6.createNode("MemberExpression");
-        let origin_curNode =  es6.createNode("MemberExpression");
+        let boxed_curNode = es6.createNode("MemberExpression");
+        let origin_curNode = es6.createNode("MemberExpression");
 
         let boxed_objectNode = generator.EmptyIdentifier();
         let origin_objectNode = generator.EmptyIdentifier();
@@ -114,7 +112,7 @@ var generator = {
         origin_curNode.property = origin_property;
 
         boxed_curNode.outType = Type.createTypeWith(generator.runtime.Sandbox.Symbol[symbol_name]);
-        let cur_nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+        let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
         return cur_nodes;
 
     },
@@ -125,43 +123,43 @@ var generator = {
 
         let outType;
         let stringed;
-        if(baseType === null) {
+        if (baseType === null) {
             baseType = util.chooseRandom(generator.GeneratorLiteralList);
         }
 
-        switch(baseType){
-            case Type.baseTypes.int:{
+        switch (baseType) {
+            case Type.baseTypes.int: {
                 literalValue = generator.GenPlus();
                 stringed = literalValue.toString();
                 outType = env.runtime.createTypeLiteral(Type.baseTypes.int);
                 break;
             }
-            case Type.baseTypes.plus:{
+            case Type.baseTypes.plus: {
                 literalValue = generator.GenPlus();
                 stringed = literalValue.toString();
                 outType = env.runtime.createTypeLiteral(Type.baseTypes.plus);
                 break;
             }
-            case Type.baseTypes.double:{
+            case Type.baseTypes.double: {
                 literalValue = generator.GenDouble();
                 stringed = literalValue.toString();
                 outType = env.runtime.createTypeLiteral(Type.baseTypes.double);
                 break;
             }
-            case Type.baseTypes.string:{
+            case Type.baseTypes.string: {
                 literalValue = generator.GenString();
                 stringed = literalValue.toString();
                 outType = env.runtime.createTypeLiteral(Type.baseTypes.string);
                 break;
             }
-            case Type.baseTypes.boolean:{
+            case Type.baseTypes.boolean: {
                 literalValue = generator.GenBoolean();
                 stringed = literalValue.toString();
                 outType = env.runtime.createTypeLiteral(Type.baseTypes.boolean);
                 break;
             }
             //https://v8.dev/features/bigint
-            case Type.baseTypes.bigint:{
+            case Type.baseTypes.bigint: {
                 literalValue = BigInt(generator.GenPlus());
                 stringed = literalValue.toString() + "n";
                 boxed_literalNode.bigint = stringed;
@@ -169,13 +167,13 @@ var generator = {
                 outType = env.runtime.createTypeLiteral(Type.baseTypes.bigint);
                 break;
             }
-            case Type.baseTypes.symbol:{
-                let symbol_name  = util.chooseRandom(env.interestingSymbols);
+            case Type.baseTypes.symbol: {
+                let symbol_name = util.chooseRandom(env.interestingSymbols);
                 let cur_nodes = generator.SymbolLiteral(symbol_name);
                 generator.pushNon(cur_nodes);
                 return;
             }
-            default:{
+            default: {
                 util.unreachable();
             }
         }
@@ -191,9 +189,9 @@ var generator = {
         origin_literalNode.value = literalValue;
         origin_literalNode.raw = stringed;
 
-        let cur_nodes = es6.createNodePair(boxed_literalNode,origin_literalNode);
+        let cur_nodes = es6.createNodePair(boxed_literalNode, origin_literalNode);
 
-        if(  (Type.isSubsumeType(Type.baseTypes.number, outType.baseType)|| (Type.baseTypes.bigint === outType.baseType) ) && baseType !== Type.baseTypes.plus  && !util.randRange(0,3)){
+        if ((Type.isSubsumeType(Type.baseTypes.number, outType.baseType) || (Type.baseTypes.bigint === outType.baseType)) && baseType !== Type.baseTypes.plus && !util.randRange(0, 3)) {
             cur_nodes = generator.UnaryExpression(cur_nodes);
         }
         generator.pushNon(cur_nodes);
@@ -202,10 +200,10 @@ var generator = {
     EmptyIdentifier() {
         return es6.createNode("Identifier");
     },
-    EmptyLiteral(){
+    EmptyLiteral() {
         return es6.createNode("Literal");
     },
-    IdentifierForDeclaration(variable){
+    IdentifierForDeclaration(variable) {
         let boxed_curNode = es6.createNode("Identifier");
         let origin_curNode = es6.createNode("Identifier");
         boxed_curNode.name = variable.varName.boxed;
@@ -227,11 +225,11 @@ var generator = {
         return cur_nodes;
     },
 
-    GenExpression(effectConstraint=false){
-        while(true) {
+    GenExpression(effectConstraint = false) {
+        while (true) {
             //(DEBUG_CHECK
-            if(debug){
-                if(generator.lengthEffect() > 1)
+            if (debug) {
+                if (generator.lengthEffect() > 1)
                     util.unreachable();
             }
             //)DEBUG_CHECK
@@ -243,7 +241,7 @@ var generator = {
                     generator.Identifier();
                 }
                 continue;
-            } else if ( effectConstraint && !generator.isEmptyEffect() ){
+            } else if (effectConstraint && !generator.isEmptyEffect()) {
                 return generator.popEffect();
             }
 
@@ -251,29 +249,28 @@ var generator = {
             let lookup_value = boxed_lookup.outType.value;
 
             //now "object" do not subsume "null". this check should be correct
-            if( !util.randRange(0,5) && Type.isSubsumeType(Type.baseTypes.object, generator.getAny().boxed.outType.baseType )){
+            if (!util.randRange(0, 5) && Type.isSubsumeType(Type.baseTypes.object, generator.getAny().boxed.outType.baseType)) {
                 generator.LoadMemberExpression();
                 continue;
             }
 
-            if( boxed_lookup.type !== "FunctionExpression" &&  Type.isSubsumeType(Type.baseTypes.function, boxed_lookup.outType.baseType ) && util.randRange(0,3) &&
-            //if( boxed_lookup.type !== "FunctionExpression" &&  Type.isSubsumeType(Type.baseTypes.function, boxed_lookup.outType.baseType ) &&
-                    ( (!debug &&  Type.hasOwnProperty(lookup_value,Type.specialKeys.keyFdesc) && !lookup_value[Type.specialKeys.keyFdesc].forbidden && !generator.runtime.isInCalling(lookup_value[Type.specialKeys.keyFdesc].name)
-                            && !( lookup_value[Type.specialKeys.keyFdesc].needThis === true && boxed_lookup.type !== "MemberExpression" )
-                            && generator.runtime.scopeStack.length < 4)
-                        || (debug && generator.runtime.scopeStack.length < 10 && Type.hasOwnProperty(lookup_value, Type.specialKeys.keyFdesc) && !lookup_value[Type.specialKeys.keyFdesc].forbidden)
-                ))
-            {
+            if (boxed_lookup.type !== "FunctionExpression" && Type.isSubsumeType(Type.baseTypes.function, boxed_lookup.outType.baseType) && util.randRange(0, 3) &&
+                //if( boxed_lookup.type !== "FunctionExpression" &&  Type.isSubsumeType(Type.baseTypes.function, boxed_lookup.outType.baseType ) &&
+                ((!debug && Type.hasOwnProperty(lookup_value, Type.specialKeys.keyFdesc) && !lookup_value[Type.specialKeys.keyFdesc].forbidden && !generator.runtime.isInCalling(lookup_value[Type.specialKeys.keyFdesc].name)
+                        && !(lookup_value[Type.specialKeys.keyFdesc].needThis === true && boxed_lookup.type !== "MemberExpression")
+                        && generator.runtime.scopeStack.length < 4)
+                    || (debug && generator.runtime.scopeStack.length < 10 && Type.hasOwnProperty(lookup_value, Type.specialKeys.keyFdesc) && !lookup_value[Type.specialKeys.keyFdesc].forbidden)
+                )) {
                 generator.CallExpression();
                 continue;
             }
 
             //(DEBUG_CHECK
-            if(debug && generator.isEmptyAny())
+            if (debug && generator.isEmptyAny())
                 util.unreachable();
             //)DEBUG_CHECK
 
-            if (!util.randRange(0, 3)){
+            if (!util.randRange(0, 3)) {
                 this[es6.getFunctionOf("Expressions")]();
                 continue;
             }
@@ -282,7 +279,7 @@ var generator = {
         }
     },
 
-    GenStatement(){
+    GenStatement() {
         let stmt_pair;
         generator.Identifier();
         let num;
@@ -292,35 +289,34 @@ var generator = {
 
         let lookupType = generator.getAny().boxed.outType;
 
-        if(debug && !lookupType)
+        if (debug && !lookupType)
             throw util.DebugError("Invalid Type Created");
-        if( (num < 40) && Type.isSubsumeType( Type.baseTypes.object, lookupType.baseType ) && Object.isExtensible(lookupType.value)) {
+        if ((num < 40) && Type.isSubsumeType(Type.baseTypes.object, lookupType.baseType) && Object.isExtensible(lookupType.value)) {
             stmt_pair = generator.ExpressionStatement();//StoreMember
-        } else if( num < (40 + 40) ){
+        } else if (num < (40 + 40)) {
             stmt_pair = generator.VariableDeclaration();
         } else if (num < (40 + 40 + 1)) {
             stmt_pair = generator.TryStatement();
-        } else{
+        } else {
             stmt_pair = generator.ThrowStatement();
         }
         return stmt_pair;
     },
-    GenStatementIntial(number){
+    GenStatementIntial(number) {
         let stmt_pair;
         let size = Type.initialTypeArray.length;
         number = number % size;
         let baseType = Type.initialTypeArray[number];
-        if(Type.isSubsumeType(Type.baseTypes.primitive,baseType)) {
+        if (Type.isSubsumeType(Type.baseTypes.primitive, baseType)) {
             generator.Literal(baseType);
-        }
-        else{
-            if(baseType === Type.baseTypes.object)
+        } else {
+            if (baseType === Type.baseTypes.object)
                 generator.ObjectExpression(true);
-            else if(baseType === Type.baseTypes.array)
+            else if (baseType === Type.baseTypes.array)
                 generator.ArrayExpression(true);
-            else if(baseType === Type.baseTypes.function)
+            else if (baseType === Type.baseTypes.function)
                 generator.FunctionExpression();
-            else{
+            else {
                 util.unreachable();
             }
         }
@@ -328,14 +324,14 @@ var generator = {
         stmt_pair = generator.VariableDeclaration(true);
         return stmt_pair;
     },
-    Generate(program){
-        try{
+    Generate(program) {
+        try {
             generator.runCnt++;
-            if(config.useJITFormat)
+            if (config.useJITFormat)
                 generator.JITProgram(program);
             else
                 generator.Program(program);
-        }catch(e){
+        } catch (e) {
             generator.errorCnt++;
             generator.handleUpperTryException(0);
             throw e;
@@ -348,18 +344,18 @@ var generator = {
         generator.runtime.Recorder.CodeRecorder.eraseAllFile();
         let program = generator.runtime.program;
         let cur_node = program.ast;
-        let contextLevel = generator.pushContext(program.scope , cur_node);
-        if(debug)util.proxyDebugOn=true;
+        let contextLevel = generator.pushContext(program.scope, cur_node);
+        if (debug) util.proxyDebugOn = true;
 
-        for(let stmtNum=0; stmtNum <= config.totallines; stmtNum++){
+        for (let stmtNum = 0; stmtNum <= config.totallines; stmtNum++) {
             let stmts;
 
-            switch (true){
-                case (stmtNum < Type.initialTypeArray.length):{
+            switch (true) {
+                case (stmtNum < Type.initialTypeArray.length): {
                     stmts = generator.GenStatementIntial(stmtNum);
                     break;
                 }
-                default :{
+                default : {
                     stmts = generator.GenStatement();
                     break;
                 }
@@ -373,15 +369,15 @@ var generator = {
 
             cur_node.body.push(stmts.origin);
 
-            if(generator.blockCriticalInserted) {
+            if (generator.blockCriticalInserted) {
                 generator.runtime.renewRootCode();
-            }else
+            } else
                 generator.runtime.updateOriginCode(stmts.origin);
             generator.runtime.updateBoxedCode(stmts.boxed);
 
 
             //(DEBUG_CHECK
-            if(debug) {
+            if (debug) {
                 if (!generator.isEmptyEffect()) {
                     util.lprint(generator.lengthEffect());
                     util.dumpAst(generator.effectStack);
@@ -393,9 +389,9 @@ var generator = {
 
         generator.popContext();
 
-        if(debug)util.proxyDebugOn=false;
-        if(config.doWriteDB)env.writeDB();
-        if(config.doWriteNT)env.commitNeedThis();
+        if (debug) util.proxyDebugOn = false;
+        if (config.doWriteDB) env.writeDB();
+        if (config.doWriteNT) env.commitNeedThis();
         return cur_node;
 
     },
@@ -405,52 +401,52 @@ var generator = {
         generator.runtime.Recorder.CodeRecorder.eraseAllFile();
         let program = generator.runtime.program;
         let cur_node = program.ast;
-        let contextLevel = generator.pushContext(program.scope , cur_node);
-        if(debug)util.proxyDebugOn=true;
+        let contextLevel = generator.pushContext(program.scope, cur_node);
+        if (debug) util.proxyDebugOn = true;
 
         let functionVariable;
         let samecalls;
 
-        for(let stmtNum=0; stmtNum <= config.totallines; stmtNum++){
+        for (let stmtNum = 0; stmtNum <= config.totallines; stmtNum++) {
             let stmts;
 
-            switch (true){
-                case (stmtNum < Type.initialTypeArray.length):{
+            switch (true) {
+                case (stmtNum < Type.initialTypeArray.length): {
                     stmts = generator.GenStatementIntial(stmtNum);
                     break;
                 }
 
-                case ( (stmtNum === (Math.floor(config.totallines/2) - 1))) : {
-                    functionVariable = generator.runtime.getVariableBuiltin(Type.baseTypes.function , true,true,  true);
-                    stmts =  generator.SpecialCallStatement( functionVariable,"%PrepareFunctionForOptimization");
+                case ((stmtNum === (Math.floor(config.totallines / 2) - 1))) : {
+                    functionVariable = generator.runtime.getVariableBuiltin(Type.baseTypes.function, true, true, true);
+                    stmts = generator.SpecialCallStatement(functionVariable, "%PrepareFunctionForOptimization");
                     break;
                 }
 
-                case ( (stmtNum === (Math.floor(config.totallines/2) ) ) ) : {
-                    stmts =  generator.CallStatement(functionVariable);
+                case ((stmtNum === (Math.floor(config.totallines / 2)))) : {
+                    stmts = generator.CallStatement(functionVariable);
                     samecalls = stmts;
                     break;
                 }
 
-                case ( (stmtNum === (Math.floor(config.totallines/2)+1 ) ) ) : {
-                    stmts =  generator.SpecialCallStatement( functionVariable,"%OptimizeFunctionOnNextCall");
+                case ((stmtNum === (Math.floor(config.totallines / 2) + 1))) : {
+                    stmts = generator.SpecialCallStatement(functionVariable, "%OptimizeFunctionOnNextCall");
                     break;
                 }
-                case ( (stmtNum === (Math.floor(config.totallines/2)+2 ) ) ) : {
+                case ((stmtNum === (Math.floor(config.totallines / 2) + 2))) : {
                     let code = Type.vmGenCode(samecalls.origin);
                     generator.currentBlock.body.push(samecalls.origin);
                     Type.vmAnalyzeCode(generator.runtime.Sandbox, code);
                     generator.currentBlock.body.pop();
-                    stmts =  samecalls;
+                    stmts = samecalls;
                     break;
                 }
 
-                case ( (stmtNum === (config.totallines) )   ) : {
-                    stmts =  generator.CallStatement(functionVariable);
+                case ((stmtNum === (config.totallines))) : {
+                    stmts = generator.CallStatement(functionVariable);
                     break;
                 }
 
-                default :{
+                default : {
                     stmts = generator.GenStatement();
                     break;
                 }
@@ -464,15 +460,15 @@ var generator = {
 
             cur_node.body.push(stmts.origin);
 
-            if(generator.blockCriticalInserted) {
+            if (generator.blockCriticalInserted) {
                 generator.runtime.renewRootCode();
-            }else
+            } else
                 generator.runtime.updateOriginCode(stmts.origin);
             generator.runtime.updateBoxedCode(stmts.boxed);
 
 
             //(DEBUG_CHECK
-            if(debug) {
+            if (debug) {
                 if (!generator.isEmptyEffect()) {
                     util.lprint(generator.lengthEffect());
                     util.dumpAst(generator.effectStack);
@@ -484,13 +480,13 @@ var generator = {
 
         generator.popContext();
 
-        if(debug)util.proxyDebugOn=false;
-        if(config.doWriteDB)env.writeDB();
-        if(config.doWriteNT)env.commitNeedThis();
+        if (debug) util.proxyDebugOn = false;
+        if (config.doWriteDB) env.writeDB();
+        if (config.doWriteNT) env.commitNeedThis();
         return cur_node;
     },
-    FunctionInitialization(args){
-        if(debug && !Type.hasOwnProperty(args.callee,Type.specialKeys.keyFdesc) )
+    FunctionInitialization(args) {
+        if (debug && !Type.hasOwnProperty(args.callee, Type.specialKeys.keyFdesc))
             util.unreachable();
         let fdesc = args.callee[Type.specialKeys.keyFdesc];
         fdesc.inited = 2;
@@ -506,8 +502,8 @@ var generator = {
         fdesc.useType = generator.callingStateTemp;
         //(TODO this code can be optimized
         let cnt = 0;
-        for(let arg of args){
-            let variable = generator.runtime.createArgumentWith(arg,cnt++);
+        for (let arg of args) {
+            let variable = generator.runtime.createArgumentWith(arg, cnt++);
             fdesc.params.push(variable.Type);
             let id_pair = generator.IdentifierWithVariable(variable);
             origin_function.params.push(id_pair.origin);
@@ -515,31 +511,30 @@ var generator = {
             generator.runtime.registerVariable(variable);
         }
 
-        let desc = Object.getOwnPropertyDescriptor(args.callee , "length");
-        if(desc.configurable) {
+        let desc = Object.getOwnPropertyDescriptor(args.callee, "length");
+        if (desc.configurable) {
             desc.value = cnt;
             Object.defineProperty(args.callee, "length", desc);
         }
 
         let stmt_cnt;
-        if(!generator.firstCalledFunction) {
-            stmt_cnt = util.randRange(config.function_initiallines + 8, config.function_initiallines + 16 );
+        if (!generator.firstCalledFunction) {
+            stmt_cnt = util.randRange(config.function_initiallines + 8, config.function_initiallines + 16);
             generator.firstCalledFunction = true;
-        }
-        else{
+        } else {
             stmt_cnt = util.randRange(config.function_initiallines + 2, config.function_initiallines + 6);
         }
 
         let returnValue;
-        for(let stmtNumber=0;stmtNumber<stmt_cnt;stmtNumber++){
+        for (let stmtNumber = 0; stmtNumber < stmt_cnt; stmtNumber++) {
             let stmtPair;
-            if(stmtNumber === (stmt_cnt-1)){
+            if (stmtNumber === (stmt_cnt - 1)) {
                 stmtPair = generator.GenReturnStatement();
                 returnValue = stmtPair.boxed.outType.value;
-                if(debug && Type.isSubsumeType(Type.baseTypes.object,stmtPair.boxed.outType.baseType ) && returnValue[Type.specialKeys.keyHostCorruptionCheck])
+                if (debug && Type.isSubsumeType(Type.baseTypes.object, stmtPair.boxed.outType.baseType) && returnValue[Type.specialKeys.keyHostCorruptionCheck])
                     throw new util.DebugError("Host was corrupted");
-            }else{
-                if(stmtNumber < config.function_initiallines)
+            } else {
+                if (stmtNumber < config.function_initiallines)
                     stmtPair = generator.GenStatementIntial(stmtNumber);
                 else
                     stmtPair = generator.GenStatement(true);
@@ -552,11 +547,11 @@ var generator = {
                 generator.functionInited = false;
                 generator.runtime.eraseOriginCode(fdesc.name);
                 generator.runtime.updateOriginCode(origin_block);
-            }else{
+            } else {
                 generator.runtime.updateOriginCode(stmtPair.origin);
             }
 
-            if(debug) {
+            if (debug) {
                 if (!generator.isEmptyEffect()) {
                     util.lprint(generator.lengthEffect(), "!!!");
                     util.dumpAst(generator.effectStack);
@@ -566,7 +561,7 @@ var generator = {
         }
 
         fdesc.code = Type.vmGenCode(boxed_function);
-        fdesc.function = Type.vmAnalyzeCode(generator.runtime.Sandbox,"(" + fdesc.code + ")");
+        fdesc.function = Type.vmAnalyzeCode(generator.runtime.Sandbox, "(" + fdesc.code + ")");
 
         fdesc.inited = true;
         generator.popContext();
@@ -576,9 +571,9 @@ var generator = {
 
     //Calling from virtual env
     //This must return virtual env's value.
-    TrapHandler(args){
+    TrapHandler(args) {
         let fdesc;
-        if ( !Type.hasOwnProperty(args.callee, Type.specialKeys.keyFdesc)) {
+        if (!Type.hasOwnProperty(args.callee, Type.specialKeys.keyFdesc)) {
             fdesc = generator.runtime.getFdesc(args.callee.name);
             Object.defineProperty(args.callee, Type.specialKeys.keyFdesc, {
                 enumerable: false,
@@ -596,20 +591,20 @@ var generator = {
             fdesc = args.callee[Type.specialKeys.keyFdesc];
         }
 
-        if(debug)util.lprint("entering: ", args.callee.name);
+        if (debug) util.lprint("entering: ", args.callee.name);
         let return_val;
         generator.runtime.insertCalling(fdesc.name);
-        if(!fdesc.inited){
-            if(debug)util.lprint("making: ", args.callee.name);
+        if (!fdesc.inited) {
+            if (debug) util.lprint("making: ", args.callee.name);
             return_val = generator.FunctionInitialization(args);
-            if(debug)util.lprint("making end: ", args.callee.name);
+            if (debug) util.lprint("making end: ", args.callee.name);
             generator.functionInited = true;
-        }else if ( fdesc.inited === 2 ){
+        } else if (fdesc.inited === 2) {
             //Infinite recursive call state.
             util.abort();
-        }else {
+        } else {
 
-            if(!fdesc.function) {
+            if (!fdesc.function) {
                 throw new util.DebugError("fdesc.function not defined");
             }
             return_val = fdesc.function[Type.specialKeys.keyApply](this, args);
@@ -617,11 +612,11 @@ var generator = {
         }
         generator.runtime.removeCalling(fdesc.name);
 
-        if(debug)util.lprint("leaving: ", args.callee.name);
+        if (debug) util.lprint("leaving: ", args.callee.name);
         return return_val;
     },
 
-    CallStatement(variable){
+    CallStatement(variable) {
         let boxed_curNode = es6.createNode("ExpressionStatement");
         let origin_curNode = es6.createNode("ExpressionStatement");
 
@@ -638,7 +633,7 @@ var generator = {
         let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
         return cur_nodes;
     },
-    SpecialCallStatement(variable, nativeSyntaxName){
+    SpecialCallStatement(variable, nativeSyntaxName) {
 
         let boxed_curNode = es6.createNode("ExpressionStatement");
         let origin_curNode = es6.createNode("ExpressionStatement");
@@ -670,7 +665,7 @@ var generator = {
     },
 
 
-    ExpressionStatement(){
+    ExpressionStatement() {
         let boxed_curNode = es6.createNode("ExpressionStatement");
         let origin_curNode = es6.createNode("ExpressionStatement");
         generator.AssignmentExpression();
@@ -683,32 +678,32 @@ var generator = {
         let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
         return cur_nodes;
     },
-    Directive(parent_node,parent_scope){
+    Directive(parent_node, parent_scope) {
 
     },
-    FillBlockStatement(block_pair){
+    FillBlockStatement(block_pair) {
         let boxed_curNode = block_pair.boxed;
         let origin_curNode = block_pair.origin;
 
         //(TODO
-        for(let i=0;i<util.randRange(1,4);i++){
+        for (let i = 0; i < util.randRange(1, 4); i++) {
             let stmts = generator.GenStatement();
             boxed_curNode.body.push(stmts.boxed);
             origin_curNode.body.push(stmts.origin);
         }
     },
 
-    EmptyStatement(){
+    EmptyStatement() {
         util.unreachable();
     },
-    DebuggerStatement(){
+    DebuggerStatement() {
         util.unreachable();
     },
-    WithStatement(){
+    WithStatement() {
         util.unreachable();
     },
     //control flow
-    GenReturnStatement(){
+    GenReturnStatement() {
         let boxed_curNode = es6.createNode("ReturnStatement");
         let origin_curNode = es6.createNode("ReturnStatement");
         let exp_pair = generator.GenExpression();
@@ -719,26 +714,26 @@ var generator = {
         let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
         return cur_nodes;
     },
-    LabeledStatement(){
+    LabeledStatement() {
         util.unreachable();
     },
-    BreakStatement(){
+    BreakStatement() {
         util.unreachable();
     },
-    ContinueStatement(){
+    ContinueStatement() {
         util.unreachable();
     },
     //condition statement
-    IfStatement(){
+    IfStatement() {
         util.unreachable();
     },
-    SwitchStatement(){
+    SwitchStatement() {
         util.unreachable();
     },
-    SwitchCase(){
+    SwitchCase() {
         util.unreachable();
     },
-    ThrowStatement(){
+    ThrowStatement() {
         let boxed_curNode = es6.createNode("ThrowStatement");
         let origin_curNode = es6.createNode("ThrowStatement");
 
@@ -749,7 +744,7 @@ var generator = {
         let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
         return cur_nodes;
     },
-    TryStatement(){
+    TryStatement() {
 
         let boxed_curNode = es6.createNode("TryStatement");
         let origin_curNode = es6.createNode("TryStatement");
@@ -776,10 +771,10 @@ var generator = {
         let final_pair = es6.createNodePair(boxed_final, origin_final);
 
         generator.currentBlock.body.push(origin_curNode);
-        let tryIdx = generator.currentBlock.body.length-1;
+        let tryIdx = generator.currentBlock.body.length - 1;
 
         let contextIdx = generator.pushContext(generator.runtime.createScope(generator.runtime.currentScope, false), origin_tryblock);
-        generator.exceptionStack.push({currentBlock:generator.currentBlock,tryIdx:tryIdx});
+        generator.exceptionStack.push({currentBlock: generator.currentBlock, tryIdx: tryIdx});
         let exceptionLevel = generator.exceptionStack.length;
         let exception;
 
@@ -870,12 +865,12 @@ var generator = {
             generator.popContext();
         }
 
-        let cur_nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+        let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
 
         generator.currentBlock.body.splice(tryIdx, 1);
 
-        if(debug && exceptionLevel !== generator.exceptionStack.length){
-                throw new util.DebugError("Exception level is not handled")
+        if (debug && exceptionLevel !== generator.exceptionStack.length) {
+            throw new util.DebugError("Exception level is not handled")
         }
         generator.exceptionStack.pop();
         return cur_nodes;
@@ -899,18 +894,18 @@ var generator = {
         boxed_curNode.param = boxed_e;
         origin_curNode.param = origin_e;
 
-        return es6.createNodePair(boxed_curNode,origin_curNode);
+        return es6.createNodePair(boxed_curNode, origin_curNode);
     },
 
     //declaration
-    FunctionDeclaration(){
+    FunctionDeclaration() {
         util.unreachable();
     },
 
-    FunctionExpression(variables=null){
+    FunctionExpression(variables = null) {
         //FunctionExpression does not consume any effect(or non-effect) stack.
         //So there must not be any effect stack.
-        if(!generator.isEmptyEffect()) {
+        if (!generator.isEmptyEffect()) {
             generator.pushAny(generator.GenExpression());
             return;
         }
@@ -933,7 +928,7 @@ var generator = {
 
         let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
         let value = generator.runtime.createTypeFunction(cur_nodes, funcName);
-        if(!Type.hasOwnProperty( value.value, Type.specialKeys.keyTypeRef)){
+        if (!Type.hasOwnProperty(value.value, Type.specialKeys.keyTypeRef)) {
             util.unreachable();
         }
         //FunctionExpresion does not need analyzation.
@@ -941,16 +936,16 @@ var generator = {
         generator.runtime.logRecord(generator.effectStack);
         boxed_curNode.outType = value;
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             env.checkOutType(boxed_curNode);
         }
         //)DEBUG_CHECK
     },
-    ArrowFunctionExpression(leftChild){
+    ArrowFunctionExpression(leftChild) {
         util.unreachable();
     },
 
-    VariableDeclaration(initial_phase = false){
+    VariableDeclaration(initial_phase = false) {
         let boxed_curNode = es6.createNode("VariableDeclaration");
         let origin_curNode = es6.createNode("VariableDeclaration");
         boxed_curNode.kind = "var";
@@ -962,18 +957,18 @@ var generator = {
         boxed_curNode.declarations.push(boxed_decl);
         origin_curNode.declarations.push(origin_decl);
 
-        let cur_nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+        let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
         return cur_nodes;
     },
 
-    VariableDeclarator(initial_phase = false){
+    VariableDeclarator(initial_phase = false) {
         let boxed_curNode = es6.createNode("VariableDeclarator");
         let origin_curNode = es6.createNode("VariableDeclarator");
         boxed_curNode.effect = true;
 
         let expression_nodes;
 
-        if(initial_phase)
+        if (initial_phase)
             expression_nodes = generator.popAny();
         else
             expression_nodes = generator.GenExpression();
@@ -1002,7 +997,7 @@ var generator = {
         let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
 
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             if (newVariable.Type === null || typeof newVariable.Type === "string") {
                 util.unreachable();
             }
@@ -1012,32 +1007,32 @@ var generator = {
     },
 
     //loop
-    WhileStatement(parent_node,parent_scope){
+    WhileStatement(parent_node, parent_scope) {
         util.unreachable();
     },
-    DoWhileStatement(parent_node,parent_scope){
+    DoWhileStatement(parent_node, parent_scope) {
         util.unreachable();
     },
-    ForStatement(parent_node,parent_scope){
+    ForStatement(parent_node, parent_scope) {
         util.unreachable();
     },
 
-    ForInStatement(){
+    ForInStatement() {
         util.unreachable();
     },
-    ForOfStatement(){
+    ForOfStatement() {
         util.unreachable();
     },
 
 
     //expression
-    ThisExpression(){
+    ThisExpression() {
         util.unreachable();
     },
     Identifier() {
         //
-        let variable  = env.runtime.getVariableBuiltin(Type.baseTypes.any );
-        if(debug && (typeof variable.varName) !== "object")
+        let variable = env.runtime.getVariableBuiltin(Type.baseTypes.any);
+        if (debug && (typeof variable.varName) !== "object")
             util.unreachable();
 
         let boxedNode = es6.createNode("Identifier");
@@ -1049,14 +1044,14 @@ var generator = {
         let originNode = es6.createNode("Identifier");
         originNode.name = variable.varName.origin;
 
-        let nodes = es6.createNodePair(boxedNode,originNode);
+        let nodes = es6.createNodePair(boxedNode, originNode);
         generator.pushNon(nodes);
     },
 
 
-    ArrayExpression(zero_length=false){
-        let boxed_curNode =  es6.createNode("ArrayExpression");
-        let origin_curNode =  es6.createNode("ArrayExpression");
+    ArrayExpression(zero_length = false) {
+        let boxed_curNode = es6.createNode("ArrayExpression");
+        let origin_curNode = es6.createNode("ArrayExpression");
         let arrayValue = env.runtime.createTypeLiteral(Type.baseTypes.array);
 
         let effect = false;
@@ -1066,12 +1061,12 @@ var generator = {
         let origin_expressionNode;
 
         let length;
-        if(zero_length === true)
+        if (zero_length === true)
             length = 0;
         else
-            length = util.randRange(0, max_array_length+1);
-        for(let i=0;i<length;i++){
-            if(i===0)
+            length = util.randRange(0, max_array_length + 1);
+        for (let i = 0; i < length; i++) {
+            if (i === 0)
                 expression_nodes = generator.GenExpression(true);
             else
                 expression_nodes = generator.GenExpression();
@@ -1092,32 +1087,32 @@ var generator = {
         boxed_curNode.outType = arrayValue;
 
         effect = true;
-        let nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+        let nodes = es6.createNodePair(boxed_curNode, origin_curNode);
 
         generator.pushAny(nodes);
 
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             env.checkOutType(boxed_curNode);
         }
         //)DEBUG_CHECK
     },
 
-    ObjectExpression(zero_length = false){
-        let boxed_objectNode =  es6.createNode("ObjectExpression");
-        let origin_objectNode =  es6.createNode("ObjectExpression");
+    ObjectExpression(zero_length = false) {
+        let boxed_objectNode = es6.createNode("ObjectExpression");
+        let origin_objectNode = es6.createNode("ObjectExpression");
         let objectValue = env.runtime.createTypeLiteral(Type.baseTypes.object);
 
         let effect = false;
         let length;
-        if(zero_length === true)
+        if (zero_length === true)
             length = 0;
         else
-            length = util.randRange(0, max_object_length+1);
+            length = util.randRange(0, max_object_length + 1);
 
-        for(let i=0;i<length;i++){
+        for (let i = 0; i < length; i++) {
             let keyName = "_x_" + i;
-            let property_nodes = generator.Property(keyName,i);
+            let property_nodes = generator.Property(keyName, i);
             let boxed_propNode = property_nodes.boxed;
             let origin_propNode = property_nodes.origin;
             boxed_propNode.useNode = boxed_objectNode;
@@ -1134,19 +1129,19 @@ var generator = {
         boxed_objectNode.outType = objectValue;
 
         effect = true;
-        let nodes = es6.createNodePair(boxed_objectNode,origin_objectNode);
+        let nodes = es6.createNodePair(boxed_objectNode, origin_objectNode);
         generator.pushAny(nodes);
 
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             env.checkOutType(boxed_objectNode);
         }
         //)DEBUG_CHECK
     },
 
-    Property(keyName,number){
-        let boxed_curNode =  es6.createNode("Property");
-        let origin_curNode =  es6.createNode("Property");
+    Property(keyName, number) {
+        let boxed_curNode = es6.createNode("Property");
+        let origin_curNode = es6.createNode("Property");
 
         let boxed_id = generator.EmptyIdentifier();
         let origin_id = generator.EmptyIdentifier();
@@ -1157,7 +1152,7 @@ var generator = {
 
         let value_nodes;
         let kind = "init";
-        if(number === 0)
+        if (number === 0)
             value_nodes = generator.GenExpression(true);
         else
             value_nodes = generator.GenExpression();
@@ -1176,26 +1171,26 @@ var generator = {
         origin_curNode.value = origin_valueNode;
         let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             env.checkOutType(boxed_curNode);
         }
         //)DEBUG_CHECK
         return cur_nodes;
     },
 
-    UnaryExpression(childs=null){
+    UnaryExpression(childs = null) {
 
         //PreEffect Expression
         let operator;
-        let boxed_curNode =  es6.createNode("UnaryExpression");
-        let origin_curNode =  es6.createNode("UnaryExpression");
+        let boxed_curNode = es6.createNode("UnaryExpression");
+        let origin_curNode = es6.createNode("UnaryExpression");
         boxed_curNode.prefix = true;
         origin_curNode.prefix = true;
 
         let argument_pair;
         let boxed_argument;
         let origin_argument;
-        if(childs === null) {
+        if (childs === null) {
             argument_pair = generator.GenExpression(true);
             boxed_argument = argument_pair.boxed;
             origin_argument = argument_pair.origin;
@@ -1212,13 +1207,13 @@ var generator = {
         boxed_curNode.argument = boxed_argument;
         origin_curNode.argument = origin_argument;
 
-        if( boxed_argument.effect || Type.checkIsEffective(boxed_argument.outType) )
+        if (boxed_argument.effect || Type.checkIsEffective(boxed_argument.outType))
             boxed_curNode.effect = true;
 
         boxed_curNode.operator = operator;
         origin_curNode.operator = operator;
 
-        let cur_nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+        let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
 
         //(TODO need vmAnalyze?
         generator.enterCritical(origin_curNode);
@@ -1227,7 +1222,7 @@ var generator = {
 
         generator.leaveCritical();
 
-        if(childs === null)
+        if (childs === null)
             generator.pushAny(cur_nodes);
 
         //generator.runtime.sandbox.operand1 = boxed_argument.outType.value;
@@ -1236,22 +1231,22 @@ var generator = {
 
 
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             env.checkOutType(boxed_curNode);
         }
         //)DEBUG_CHECK
         //Unary should return cur_nodes if it is called from Literal
-        if(childs !== null)
+        if (childs !== null)
             return cur_nodes;
     },
-    UpdateExpression(leftChild){
+    UpdateExpression(leftChild) {
         //Prohibited
         util.unreachable()
     },
-    BinaryExpression(){
+    BinaryExpression() {
         //PreEffect Expression
-        let boxed_curNode =  es6.createNode("BinaryExpression");
-        let origin_curNode =  es6.createNode("BinaryExpression");
+        let boxed_curNode = es6.createNode("BinaryExpression");
+        let origin_curNode = es6.createNode("BinaryExpression");
 
         let effect = false;
         let lefts = generator.GenExpression(true);
@@ -1262,19 +1257,19 @@ var generator = {
         boxed_curNode.left = boxed_left;
         origin_curNode.left = origin_left;
 
-        if( boxed_left.effect || Type.checkIsEffective(boxed_left.outType) )
+        if (boxed_left.effect || Type.checkIsEffective(boxed_left.outType))
             effect = true;
 
         let rights = generator.GenExpression();
         let boxed_right = rights.boxed;
         let origin_right = rights.origin;
-        if( boxed_right.effect || Type.checkIsEffective(boxed_right.outType) )
+        if (boxed_right.effect || Type.checkIsEffective(boxed_right.outType))
             effect = true;
 
         let operators = Type.getCompatibleBinaryOperators(boxed_left.outType.baseType, boxed_right.outType.baseType);
-        let operator = operators[util.randRange(0,operators.length)];
+        let operator = operators[util.randRange(0, operators.length)];
 
-        if( operator === "in" || operator === "instanceof")
+        if (operator === "in" || operator === "instanceof")
             effect = true;
 
         boxed_curNode.operator = operator;
@@ -1285,7 +1280,7 @@ var generator = {
         origin_curNode.right = origin_right;
 
         boxed_curNode.effect = effect;
-        let cur_nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+        let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
 
         generator.enterCritical(origin_curNode);
 
@@ -1296,24 +1291,24 @@ var generator = {
         generator.pushAny(cur_nodes);
 
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             env.checkOutType(boxed_curNode);
         }
         //)DEBUG_CHECK
     },
     //Only for StoreField Assignment
-    AssignmentExpression(){
+    AssignmentExpression() {
         let objectLookup = generator.getAny().boxed;
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             //StoreField is only possible for object.
             if (!Type.isSubsumeType(Type.baseTypes.object, objectLookup.outType.baseType))
                 util.unreachable();
         }
         //)DEBUG_CHECK
 
-        let boxed_curNode =  es6.createNode("AssignmentExpression");
-        let origin_curNode =  es6.createNode("AssignmentExpression");
+        let boxed_curNode = es6.createNode("AssignmentExpression");
+        let origin_curNode = es6.createNode("AssignmentExpression");
 
         let operator = "=";
         boxed_curNode.operator = operator;
@@ -1341,7 +1336,7 @@ var generator = {
 
         //assignment is always effective
         boxed_curNode.effect = true;
-        let cur_nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+        let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
 
         //StoreMember always has object outType. .
         //generator.runtime.logRecord(generator.effectStack);
@@ -1354,14 +1349,14 @@ var generator = {
 
         generator.pushAny(cur_nodes);
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             env.checkOutType(boxed_curNode);
         }
         //)DEBUG_CHECK
     },
 
     //LoadField Expression
-    LoadMemberExpression(){
+    LoadMemberExpression() {
         let objectNodes = generator.getAny();
         let boxed_objectNode = objectNodes.boxed;
         let origin_objectNode = objectNodes.origin;
@@ -1370,13 +1365,13 @@ var generator = {
         //becuase MemberExpression can't be called from effectConstraint=true.
         //Check Possible
         //(TODO supporting primitive __proto__, prototype
-        if( !Type.isSubsumeType(Type.baseTypes.object, boxed_objectNode.outType.baseType) || boxed_objectNode.outType.value === null) {
+        if (!Type.isSubsumeType(Type.baseTypes.object, boxed_objectNode.outType.baseType) || boxed_objectNode.outType.value === null) {
             generator.pushAny(generator.GenExpression());
             return;
         }
 
-        let boxed_curNode =  es6.createNode("MemberExpression");
-        let origin_curNode =  es6.createNode("MemberExpression");
+        let boxed_curNode = es6.createNode("MemberExpression");
+        let origin_curNode = es6.createNode("MemberExpression");
 
         boxed_objectNode.useNode = boxed_curNode;
         boxed_curNode.object = boxed_objectNode;
@@ -1389,23 +1384,23 @@ var generator = {
         let anyKeys = Type.getKeys(object);
         //let anyKeys = Object.keys(object);
 
-        if(anyKeys.length === 0 ) {
+        if (anyKeys.length === 0) {
             generator.pushAny(generator.GenExpression());
             return;
         }
 
-        if( (!util.randRange(0, 2) || anyKeys.length === 0) && !Type.hasOwnProperty(object,Type.specialKeys.keyIsBuiltin)  ){
+        if ((!util.randRange(0, 2) || anyKeys.length === 0) && !Type.hasOwnProperty(object, Type.specialKeys.keyIsBuiltin)) {
             let key;
-            if( util.randRange(0, 4) && Type.isSubsumeType(Type.baseTypes.function, typeof object) )
+            if (util.randRange(0, 4) && Type.isSubsumeType(Type.baseTypes.function, typeof object))
                 key = "prototype";
             else {
                 let proto = object.__proto__;
-                if(Type.isSubsumeType(Type.baseTypes.primitive, typeof proto) || proto === null || Type.getKeys(proto).length === 0)
+                if (Type.isSubsumeType(Type.baseTypes.primitive, typeof proto) || proto === null || Type.getKeys(proto).length === 0)
                     key = "__proto__";
                 else {
                     let anyKeys = Type.getKeys(proto);
                     key = anyKeys[util.randRange(0, anyKeys.length)];
-                    if(!Type.hasOwnProperty(object,key)){
+                    if (!Type.hasOwnProperty(object, key)) {
                         object = proto;
                     }
                 }
@@ -1431,16 +1426,16 @@ var generator = {
             let property = object[key];
             generator.leaveCritical();
 
-            if( property === undefined || property === null){
+            if (property === undefined || property === null) {
                 generator.pushAny(generator.GenExpression());
                 return;
             }
             let outType = Type.createTypeWith(property);
 
-            if(config.doWriteDB )
-                env.updateType(key,outType);
+            if (config.doWriteDB)
+                env.updateType(key, outType);
 
-            let cur_nodes = es6.createNodePair(boxed_curNode ,origin_curNode);
+            let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
 
             //generator.runtime.logRecord(generator.effectStack);
             boxed_curNode.outType = outType;
@@ -1448,7 +1443,7 @@ var generator = {
             generator.pushAny(cur_nodes);
 
             //(DEBUG_CHECK
-            if( debug && !Type.isSubsumeType(Type.baseTypes.primitive, typeof property) && property[Type.specialKeys.keyHostCorruptionCheck]) {
+            if (debug && !Type.isSubsumeType(Type.baseTypes.primitive, typeof property) && property[Type.specialKeys.keyHostCorruptionCheck]) {
                 throw new util.DebugError("Host was corrupted");
             }
             //)DEBUG_CHECK
@@ -1475,9 +1470,9 @@ var generator = {
             //pop for "objectNode = generator.getAny()"
             generator.popAny();
             let outType = Type.createTypeWith(property);
-            if(config.doWriteDB)
-                env.updateType(key,outType);
-            let cur_nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+            if (config.doWriteDB)
+                env.updateType(key, outType);
+            let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
 
             //generator.runtime.logRecord(generator.effectStack);
             boxed_curNode.outType = outType;
@@ -1485,7 +1480,7 @@ var generator = {
         }
 
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             env.checkOutType(boxed_curNode);
         }
         //)DEBUG_CHECK
@@ -1496,14 +1491,14 @@ var generator = {
         let boxed_objectNode = objectNodes.boxed;
         let origin_objectNode = objectNodes.origin;
 
-        if(debug){
+        if (debug) {
             //AssignmentExpression should check type of objectNode.
             if (!Type.isSubsumeType(Type.baseTypes.object, boxed_objectNode.outType.baseType))
                 util.unreachable();
         }
 
-        let boxed_curNode =  es6.createNode("MemberExpression");
-        let origin_curNode =  es6.createNode("MemberExpression");
+        let boxed_curNode = es6.createNode("MemberExpression");
+        let origin_curNode = es6.createNode("MemberExpression");
 
         boxed_curNode.object = boxed_objectNode;
         boxed_curNode.effect = true;
@@ -1511,7 +1506,7 @@ var generator = {
 
         let object = boxed_objectNode.outType.value;
         let anyKeys = Type.getKeys(object);
-        if(util.randRange(0,2))
+        if (util.randRange(0, 2))
             anyKeys = anyKeys.reverse();
 
         let selectedKey = env.compatibleKeyOf(anyKeys, assignValueType);
@@ -1519,8 +1514,8 @@ var generator = {
         //We checked that object is always extensible.
         //(TODO supporting "__proto__","prototype"
 
-        if( selectedKey && util.randRange(0,2) && !(selectedKey === "prototype" && Type.hasOwnProperty(object,Type.specialKeys.keyIsBuiltin)) ){
-            if( anyKeys.length === 0 )
+        if (selectedKey && util.randRange(0, 2) && !(selectedKey === "prototype" && Type.hasOwnProperty(object, Type.specialKeys.keyIsBuiltin))) {
+            if (anyKeys.length === 0)
                 util.unreachable();
             //Store in existing.
             let key = selectedKey;
@@ -1540,65 +1535,64 @@ var generator = {
             //Create new property.
             let key;
             let isSymbol = false;
-            if(boxed_objectNode.outType.baseType === Type.baseTypes.array && util.randRange(0,4)){
-                if(util.randRange(0,2))
+            if (boxed_objectNode.outType.baseType === Type.baseTypes.array && util.randRange(0, 4)) {
+                if (util.randRange(0, 2))
                     key = anyKeys.length.toString();
                 else
                     key = generator.GenPlus().toString();
-            }
-            else {
-                let sel = util.randRange(0,8);
+            } else {
+                let sel = util.randRange(0, 8);
 
                 switch (true) {
                     case (sel < 1): {
                         key = env.getCompatibleKey(assignValueType);
-                        if(key)
+                        if (key)
                             break;
                         key = env.getCompatibleSymbolKey(assignValueType);
-                        if(key) {
+                        if (key) {
                             isSymbol = true;
                         }
                         break;
                     }
-                    case (sel < 2 ): {
+                    case (sel < 2): {
                         key = env.getCompatibleSymbolKey(assignValueType);
-                        if(key) {
+                        if (key) {
                             isSymbol = true;
                             break;
                         }
                         key = env.getCompatibleKey(assignValueType);
                         break;
                     }
-                    case (sel < 3 ): {
-                        if(util.randRange(0,2))
+                    case (sel < 3): {
+                        if (util.randRange(0, 2))
                             key = anyKeys.length.toString();
                         else
                             key = generator.GenPlus().toString();
                         break;
                     }
-                    default:{
+                    default: {
                         break;
                     }
                 }
-                if(!key)
+                if (!key)
                     key = "_x_" + anyKeys.length;
             }
             //(CURRENT_DEBUG
 
-            if( debug && (key === undefined || key === "undefined")) {
+            if (debug && (key === undefined || key === "undefined")) {
                 throw new util.DebugError("invalid key:  key === undefined");
             }
 
             let boxed_property;
             let origin_property;
-            if(isSymbol){
+            if (isSymbol) {
                 boxed_property = generator.EmptyIdentifier();
                 origin_property = generator.EmptyIdentifier();
 
                 boxed_property.name = key;
                 origin_property.name = key;
 
-            }else{
+            } else {
                 boxed_property = generator.EmptyLiteral();
                 origin_property = generator.EmptyLiteral();
 
@@ -1612,23 +1606,23 @@ var generator = {
             origin_curNode.property = origin_property;
         }
 
-        let cur_nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+        let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
 
         generator.pushEffect(cur_nodes);
         boxed_curNode.outType = boxed_objectNode.outType;
 
         //(DEBUG_CHECK
-        if( debug ){
+        if (debug) {
             env.checkOutType(boxed_curNode);
         }
         //)DEBUG_CHECK
     },
-    LogicalExpression(){
+    LogicalExpression() {
         //NonEffect Expression
-        let boxed_curNode =  es6.createNode("LogicalExpression");
-        let origin_curNode =  es6.createNode("LogicalExpression");
+        let boxed_curNode = es6.createNode("LogicalExpression");
+        let origin_curNode = es6.createNode("LogicalExpression");
         let length = es6.LogicalOperator.length;
-        let operator = es6.LogicalOperator[util.randRange(0,length)];
+        let operator = es6.LogicalOperator[util.randRange(0, length)];
         boxed_curNode.operator = operator;
         origin_curNode.operator = operator;
 
@@ -1642,10 +1636,10 @@ var generator = {
 
         let rights;
 
-        if(  (operator==="||" && boxed_left.outType.value) || (operator==="&&" && !boxed_left.outType.value) )  {
+        if ((operator === "||" && boxed_left.outType.value) || (operator === "&&" && !boxed_left.outType.value)) {
             //Need virtual node.
             rights = generator.VirtualCallExpression();
-        }else{
+        } else {
             rights = generator.GenExpression();
         }
 
@@ -1657,21 +1651,21 @@ var generator = {
         origin_curNode.right = origin_right;
 
         boxed_curNode.effect = !!boxed_left.effect | !!boxed_right.effect;
-        let cur_nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+        let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
         //analyze
         generator.pushAny(cur_nodes);
         generator.runtime.logRecord(generator.effectStack);
         boxed_curNode.outType = Type.logicalResultType(operator, boxed_left.outType, boxed_right.outType);
 
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             env.checkOutType(boxed_curNode);
         }
         //)DEBUG_CHECK
     },
-    ConditionalExpression(){
-        let boxed_curNode =  es6.createNode("ConditionalExpression");
-        let origin_curNode =  es6.createNode("ConditionalExpression");
+    ConditionalExpression() {
+        let boxed_curNode = es6.createNode("ConditionalExpression");
+        let origin_curNode = es6.createNode("ConditionalExpression");
 
         let tests = generator.GenExpression(true);
         let boxed_test = tests.boxed;
@@ -1680,7 +1674,7 @@ var generator = {
         boxed_curNode.test = boxed_test;
         origin_curNode.test = origin_test;
 
-        if(boxed_test.outType.value) {
+        if (boxed_test.outType.value) {
             let consequents = generator.GenExpression();
             let boxed_consequent = consequents.boxed;
             let origin_consequent = consequents.origin;
@@ -1699,11 +1693,10 @@ var generator = {
             origin_curNode.consequent = origin_consequent;
             origin_curNode.alternate = origin_alternate;
 
-            let cur_nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+            let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
             generator.pushAny(cur_nodes);
             boxed_curNode.outType = boxed_consequent.outType;
-        }
-        else {
+        } else {
             //fake node.
             let consequents = generator.VirtualCallExpression();
             let boxed_consequent = consequents.boxed;
@@ -1723,21 +1716,21 @@ var generator = {
             origin_curNode.consequent = origin_consequent;
             origin_curNode.alternate = origin_alternate;
 
-            let cur_nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+            let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
             generator.pushAny(cur_nodes);
             boxed_curNode.outType = boxed_alternate.outType;
         }
 
         //no analyze need
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             env.checkOutType(boxed_curNode);
         }
         //)DEBUG_CHECK
     },
 
 
-    VirtualCallStatement(){
+    VirtualCallStatement() {
         let boxed_curNode = es6.createNode("ExpressionStatement");
         let origin_curNode = es6.createNode("ExpressionStatement");
         let calls = generator.VirtualCallExpression();
@@ -1749,16 +1742,16 @@ var generator = {
         let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
         return cur_nodes;
     },
-    VirtualCallExpression(){
-        let variable = generator.runtime.getVariableBuiltin(Type.baseTypes.function , true);
+    VirtualCallExpression() {
+        let variable = generator.runtime.getVariableBuiltin(Type.baseTypes.function, true);
         let functionIds = generator.IdentifierWithVariable(variable);
         generator.CallExpression(functionIds);
         return generator.popAny();
     },
-    CallExpression(fakeFunctions=null){
+    CallExpression(fakeFunctions = null) {
 
         let function_nodes;
-        if(fakeFunctions)//If functions is not null, this means fake call.
+        if (fakeFunctions)//If functions is not null, this means fake call.
             function_nodes = fakeFunctions;
         else
             function_nodes = generator.popAny();
@@ -1767,24 +1760,24 @@ var generator = {
         let origin_functionNode = function_nodes.origin;
         //(DEBUG_CHECK
         //Should be functionNode
-        if( debug && !Type.isSubsumeType(Type.baseTypes.function, boxed_functionNode.outType.baseType ) )
+        if (debug && !Type.isSubsumeType(Type.baseTypes.function, boxed_functionNode.outType.baseType))
             util.unreachable();
         //)DEBUG_CHECK
         let this_;
-        if( boxed_functionNode.type === "MemberExpression" ){
+        if (boxed_functionNode.type === "MemberExpression") {
             this_ = boxed_functionNode.object.outType.value
-        }else{
+        } else {
             this_ = null;
         }
 
         let boxed_curNode;
         let origin_curNode;
         let doNewCall = false;
-        if( Type.isSubsumeType(Type.baseTypes.constructor, boxed_functionNode.outType.baseType )  ){
+        if (Type.isSubsumeType(Type.baseTypes.constructor, boxed_functionNode.outType.baseType)) {
             doNewCall = true;
             boxed_curNode = es6.createNode("NewExpression");
             origin_curNode = es6.createNode("NewExpression");
-        }else{
+        } else {
             boxed_curNode = es6.createNode("CallExpression");
             origin_curNode = es6.createNode("CallExpression");
         }
@@ -1798,19 +1791,19 @@ var generator = {
         origin_curNode.callee = origin_functionNode;
 
         let Param = [];
-        if( Type.hasOwnProperty(functionValue, Type.specialKeys.keyFdesc)){
+        if (Type.hasOwnProperty(functionValue, Type.specialKeys.keyFdesc)) {
             let fdesc = functionValue[Type.specialKeys.keyFdesc];
 
-            if(fdesc.inited === true){
-                for(let type of fdesc.params){
+            if (fdesc.inited === true) {
+                for (let type of fdesc.params) {
                     let requireType = type.baseType;
-                    if( requireType === Type.baseTypes.constructor){
+                    if (requireType === Type.baseTypes.constructor) {
                         requireType = Type.baseTypes.function;
                     }
-                    if(!Type.isSubsumeType(Type.baseTypes.any,requireType))
+                    if (!Type.isSubsumeType(Type.baseTypes.any, requireType))
                         requireType = Type.baseTypes.any;
 
-                    let variable = generator.runtime.getVariableBuiltin(requireType,true, false, false, "", true);
+                    let variable = generator.runtime.getVariableBuiltin(requireType, true, false, false, "", true);
 
                     Param.push(variable.Type.value);
                     let identifier_pair = generator.IdentifierWithVariable(variable);
@@ -1818,19 +1811,19 @@ var generator = {
                     origin_curNode.arguments.push(identifier_pair.origin);
 
                 }
-            }else{
-                let size = util.randRange(2,4);
-                for(let i=0;i<size;i++) {
+            } else {
+                let size = util.randRange(2, 4);
+                for (let i = 0; i < size; i++) {
                     let variable;
-                    while(true) {
+                    while (true) {
                         //(TODO it is just for to avoid selecting undefined type.
                         variable = generator.runtime.getVariableBuiltin(Type.baseTypes.object, true, false, false, "", true);
                         //(TODO prevent infinite loop..
-                        if( variable.Type.value !== functionValue)
+                        if (variable.Type.value !== functionValue)
                             break;
                     }
                     Param.push(variable.Type.value);
-                    if(variable.Type.value ===undefined)
+                    if (variable.Type.value === undefined)
                         util.unreachable();
                     let identifier_pair = generator.IdentifierWithVariable(variable);
                     boxed_curNode.arguments.push(identifier_pair.boxed);
@@ -1841,20 +1834,20 @@ var generator = {
         let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
 
         //(DEBUG_CHECK
-        if( debug ){
+        if (debug) {
             util.lprint("call function level:", generator.runtime.scopeStack.length);
             util.lprint(Type.vmGenCode(boxed_curNode));
         }
         //)DEBUG_CHECK
 
-        if(!fakeFunctions) {
+        if (!fakeFunctions) {
             //execute
             let val;
             generator.enterCritical(origin_curNode);
             generator.callingStateTemp = Type.FuncUseTypes.call;
             try {
 
-                if(doNewCall) {
+                if (doNewCall) {
                     switch (Param.length) {
 
                         case 0: {
@@ -1866,23 +1859,23 @@ var generator = {
                             break;
                         }
                         case 2: {
-                            val = new functionValue(Param[0],Param[1]);
+                            val = new functionValue(Param[0], Param[1]);
                             break;
                         }
                         case 2: {
-                            val = new functionValue(Param[0],Param[1],Param[2]);
+                            val = new functionValue(Param[0], Param[1], Param[2]);
                             break;
                         }
-                        default:{
+                        default: {
                             util.unreachable();
                         }
                     }
-                }else
+                } else
                     val = functionValue[Type.specialKeys.keyApply](this_, Param);
 
-            }catch(e){
+            } catch (e) {
                 let msg = e.toString();
-                if(config.doWriteNT && (msg.includes(`Cannot convert undefined or null`) || msg.includes("called on null or undefined") ))
+                if (config.doWriteNT && (msg.includes(`Cannot convert undefined or null`) || msg.includes("called on null or undefined")))
                     env.logNeedThis(functionValue.name);
                 throw e;
             }
@@ -1904,10 +1897,10 @@ var generator = {
         //)DEBUG_CHECK
     },
 
-    NewExpression(){
+    NewExpression() {
         util.unreachable();
     },
-    SequenceExpression(){
+    SequenceExpression() {
         util.unreachable();
     },
     YieldExprLession() {
@@ -1918,7 +1911,7 @@ var generator = {
         let boxed_curNode = es6.createNode("TaggedTemplateExpression");
         let origin_curNode = es6.createNode("TaggedTemplateExpression");
         boxed_curNode.effect = true;
-        let variable = generator.runtime.getVariableBuiltin(Type.baseTypes.function,true, false, true, Type.FuncUseTypes.template, true);
+        let variable = generator.runtime.getVariableBuiltin(Type.baseTypes.function, true, false, true, Type.FuncUseTypes.template, true);
         let id_pair = generator.IdentifierWithVariable(variable);
 
         boxed_curNode.tag = id_pair.boxed;
@@ -1936,19 +1929,19 @@ var generator = {
         generator.runtime.Sandbox.operand1 = id_pair.boxed.outType.value;
         generator.runtime.Sandbox.operand2 = operandArr;
 
-        for(let i=0; i<boxed_template.quasis.length*2-1; i++){
-            if(i%2 === 0){
-                resultString += boxed_template.quasis[ Math.floor(i/2) ].outType.value;
-            }else{
-                resultString += "${operand2[" + Math.floor(i/2) + "]}";
-                operandArr.push(boxed_template.expressions[ Math.floor(i/2 ) ].outType.value);
+        for (let i = 0; i < boxed_template.quasis.length * 2 - 1; i++) {
+            if (i % 2 === 0) {
+                resultString += boxed_template.quasis[Math.floor(i / 2)].outType.value;
+            } else {
+                resultString += "${operand2[" + Math.floor(i / 2) + "]}";
+                operandArr.push(boxed_template.expressions[Math.floor(i / 2)].outType.value);
             }
         }
         resultString += "`";
-        let cur_nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+        let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
 
         //(DEBUG_CHECK
-        if( debug ){
+        if (debug) {
             util.lprint("TaggedTemplateExpression level:", generator.runtime.scopeStack.length);
             util.lprint(Type.vmGenCode(boxed_curNode));
         }
@@ -1965,11 +1958,11 @@ var generator = {
 
         let type = Type.createTypeWith(resultValue);
         boxed_curNode.outType = type;
-        if(debug) {
+        if (debug) {
             env.checkOutType(boxed_curNode);
         }
     },
-    TemplateLiteral(fromTag=false) {
+    TemplateLiteral(fromTag = false) {
         let boxed_curNode = es6.createNode("TemplateLiteral");
         let origin_curNode = es6.createNode("TemplateLiteral");
 
@@ -1978,16 +1971,16 @@ var generator = {
         let expression_nodes;
         let boxed_expressionNode;
         let origin_expressionNode;
-        let expressions_length = util.randRange(1,max_template_length+1);
-        for (let i = 0; i < expressions_length*2 + 1; i++) {
-            if(i%2 === 0) {
+        let expressions_length = util.randRange(1, max_template_length + 1);
+        for (let i = 0; i < expressions_length * 2 + 1; i++) {
+            if (i % 2 === 0) {
                 let element_nodes = generator.TemplateElement();
 
                 boxed_curNode.quasis.push(element_nodes.boxed);
                 origin_curNode.quasis.push(element_nodes.origin);
                 resultString += element_nodes.boxed.outType.value;
             } else {
-                if(i===1)//first
+                if (i === 1)//first
                     expression_nodes = generator.GenExpression(true);
                 else
                     expression_nodes = generator.GenExpression();
@@ -1998,7 +1991,7 @@ var generator = {
                 origin_curNode.expressions.push(origin_expressionNode);
 
                 boxed_curNode.effect |= !!boxed_expressionNode.effect;
-                if(!fromTag) {
+                if (!fromTag) {
                     //Maybe this makes same effect as in real code.
                     resultString += boxed_expressionNode.outType.value;
 
@@ -2008,17 +2001,17 @@ var generator = {
 
         let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
         //analyze
-        if(!fromTag) {
+        if (!fromTag) {
             generator.pushAny(cur_nodes);
             generator.runtime.logRecord(generator.nonEffectStack);
             boxed_curNode.outType = env.runtime.createTypeLiteral(Type.baseTypes.string);
             boxed_curNode.outType.value = resultString;
             //(DEBUG_CHECK
-            if(debug) {
+            if (debug) {
                 env.checkOutType(boxed_curNode);
             }
             //)DEBUG_CHECK
-        }else{
+        } else {
             return cur_nodes;
         }
 
@@ -2027,7 +2020,7 @@ var generator = {
         let boxed_curNode = es6.createNode("TemplateElement");
         let origin_curNode = es6.createNode("TemplateElement");
 
-        let tail = !util.randRange(0,2);
+        let tail = !util.randRange(0, 2);
         boxed_curNode.tail = tail;
         origin_curNode.tail = tail;
 
@@ -2041,12 +2034,12 @@ var generator = {
             raw: string
         };
 
-        let cur_nodes = es6.createNodePair(boxed_curNode,origin_curNode);
+        let cur_nodes = es6.createNodePair(boxed_curNode, origin_curNode);
         boxed_curNode.outType = env.runtime.createTypeLiteral(Type.baseTypes.string);
         boxed_curNode.outType.value = string;
 
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             env.checkOutType(boxed_curNode);
         }
         //)DEBUG_CHECK
@@ -2054,110 +2047,114 @@ var generator = {
     },
 
 
-    updateRootCode(){
+    updateRootCode() {
         generator.runtime.renewRootCode();
     },
-    clearAny(){
-        if(generator.effectStack.length)
+    clearAny() {
+        if (generator.effectStack.length)
             util.unreachable();
         generator.nonEffectStack.length = 0;
     },
-    pushAny(nodes){
-        if(debug && (!nodes.boxed || !nodes.origin)){
+    pushAny(nodes) {
+        if (debug && (!nodes.boxed || !nodes.origin)) {
             util.unreachable();
         }
 
-        if(nodes.boxed.effect){
+        if (nodes.boxed.effect) {
             generator.pushEffect(nodes);
-        }else{
+        } else {
             generator.pushNon(nodes);
         }
     },
-    isEmptyAny(){
-        if(generator.effectStack !== null)
-            return ( generator.effectStack.length ===0 && generator.nonEffectStack.length ===0 )
+    isEmptyAny() {
+        if (generator.effectStack !== null)
+            return (generator.effectStack.length === 0 && generator.nonEffectStack.length === 0)
         else
             return true;
     },
-    popAny(){
-        if(!generator.isEmptyEffect()) {
-            if(debug && (!generator.getEffect().boxed || !generator.getEffect().origin)){
+    popAny() {
+        if (!generator.isEmptyEffect()) {
+            if (debug && (!generator.getEffect().boxed || !generator.getEffect().origin)) {
                 util.unreachable();
             }
             return generator.popEffect();
-        }
-        else if( !generator.isEmptyNon() ) {
-            if(debug && (!generator.getNon().boxed || !generator.getNon().origin)){
+        } else if (!generator.isEmptyNon()) {
+            if (debug && (!generator.getNon().boxed || !generator.getNon().origin)) {
                 util.unreachable();
             }
             return generator.popNon();
         }
         util.unreachable();
     },
-    getAny(){
-        if(!generator.isEmptyEffect())
+    getAny() {
+        if (!generator.isEmptyEffect())
             return generator.getEffect();
-        else if( !generator.isEmptyNon() )
+        else if (!generator.isEmptyNon())
             return generator.getNon();
         util.unreachable();
     },
 
     //Effect
-    pushEffect(nodes){
-        if(debug && (!nodes.boxed || !nodes.origin)){
+    pushEffect(nodes) {
+        if (debug && (!nodes.boxed || !nodes.origin)) {
             util.unreachable();
         }
         generator.nonEffectStack.length = 0;
-        if(generator.effectStack.length > 0 || !nodes.boxed.effect)
+        if (generator.effectStack.length > 0 || !nodes.boxed.effect)
             util.unreachable();
         generator.effectStack.push(nodes);
     },
-    getEffect(){
-        if ( generator.effectStack[0] === undefined )
+    getEffect() {
+        if (generator.effectStack[0] === undefined)
             util.unreachable();
         return generator.effectStack[0];
     },
-    popEffect(){
-        if ( generator.effectStack.length === 0 )
+    popEffect() {
+        if (generator.effectStack.length === 0)
             util.unreachable();
-        if( generator.effectStack.length > 1)
+        if (generator.effectStack.length > 1)
             util.unreachable();
         return generator.effectStack.shift();
     },
-    lengthEffect(){
+    lengthEffect() {
         return generator.effectStack.length;
     },
-    isEmptyEffect(){
+    isEmptyEffect() {
         return generator.effectStack.length === 0;
     },
 
     //NonEffect
-    pushNon(node){
-        if(debug && (!node.boxed || !node.origin)){
+    pushNon(node) {
+        if (debug && (!node.boxed || !node.origin)) {
             util.unreachable();
         }
         generator.nonEffectStack.push(node);
     },
-    getNon(){
-        if ( generator.nonEffectStack[0] === undefined )
+    getNon() {
+        if (generator.nonEffectStack[0] === undefined)
             util.unreachable();
         return generator.nonEffectStack[0];
     },
-    popNon(){
-        if ( generator.nonEffectStack[0] === undefined )
+    popNon() {
+        if (generator.nonEffectStack[0] === undefined)
             util.unreachable();
-        if(generator.effectStack.length !== 0)
+        if (generator.effectStack.length !== 0)
             util.unreachable();
         return generator.nonEffectStack.shift();
     },
-    isEmptyNon(){
+    isEmptyNon() {
         return generator.nonEffectStack.length === 0;
     },
-    pushContext(scope, origin_blockNode, fname="", callingState){
+    pushContext(scope, origin_blockNode, fname = "", callingState) {
         let level = generator.runtime.pushScope(scope);
         generator.runtime.Recorder.CodeRecorder.setFileLevel(level);
         generator.runtime.Recorder.CodeRecorder.eraseOriginFile(fname);
-        let context = {non:generator.nonEffectStack,effect:generator.effectStack,currentBlock:generator.currentBlock,callingState:generator.callingState};
+        let context = {
+            non: generator.nonEffectStack,
+            effect: generator.effectStack,
+            currentBlock: generator.currentBlock,
+            callingState: generator.callingState
+        };
         //(DEBUG_CHECK
         //(TODO is this check right?
         /*
@@ -2174,7 +2171,7 @@ var generator = {
         generator.callingState = callingState;
         return level;
     },
-    popContext(){
+    popContext() {
         let context = generator.contextStack.pop();
         generator.nonEffectStack = context.non;
         generator.effectStack = context.effect;
@@ -2184,7 +2181,7 @@ var generator = {
         //generator.runtime.Recorder.CodeRecorder.eraseOriginFile();
         generator.runtime.Recorder.CodeRecorder.setFileLevel(level);
     },
-    recoverContext(idx){
+    recoverContext(idx) {
         generator.contextStack.length = idx;
         let context = generator.contextStack.pop();
         generator.nonEffectStack = context.non;
@@ -2197,34 +2194,34 @@ var generator = {
         //generator.runtime.Recorder.CodeRecorder.eraseOriginFile();
         generator.runtime.Recorder.CodeRecorder.setFileLevel(level);
     },
-    enterCritical(origin_curNode){
+    enterCritical(origin_curNode) {
         let statement = es6.createNode("ExpressionStatement");
         statement.expression = origin_curNode;
         generator.currentBlock.body.push(statement);
         generator.updateRootCode();
-        if(generator.currentBlock !== generator.runtime.program.ast) {
+        if (generator.currentBlock !== generator.runtime.program.ast) {
             generator.blockCriticalInserted = true;
         }
     },
-    leaveCritical(){
+    leaveCritical() {
         generator.currentBlock.body.pop();
     },
-    handleUpperTryException(exceptionLevel, isTry = true){
+    handleUpperTryException(exceptionLevel, isTry = true) {
         let unHandledLevel = generator.exceptionStack.length;
         let compared = (exceptionLevel !== unHandledLevel);
-        if( compared ) {
+        if (compared) {
             if (debug && isTry && (exceptionLevel !== unHandledLevel - 1)) {
                 throw new util.DebugError("Invalid exception level");
             }
 
-            for(let level = (unHandledLevel-1); level > exceptionLevel; level--){
+            for (let level = (unHandledLevel - 1); level > exceptionLevel; level--) {
                 let exceptionInfo = generator.exceptionStack[level];
                 exceptionInfo.currentBlock.body.splice(exceptionInfo.tryIdx, 1);
             }
             generator.exceptionStack.length = exceptionLevel;
         }
     },
-    resetGenerator(){
+    resetGenerator() {
         generator.nonEffectStack = null;
         generator.effectStack = null;
         generator.contextStack = [];
@@ -2237,19 +2234,19 @@ var generator = {
         generator.callingStateTemp = Type.FuncUseTypes.non;
         generator.exceptionStack = []
     },
-    runCnt:0,
-    errorCnt:0,
-    nonEffectStack:null,
-    effectStack:null,
-    contextStack:null,
-    fdescStack:null,
-    functionInited:false,
-    blockCriticalInserted:false,
-    currentBlock:null,
-    firstCalledFunction:false,
-    callingState:Type.FuncUseTypes.non,
-    callingStateTemp:Type.FuncUseTypes.non,
-    exceptionStack:null,
+    runCnt: 0,
+    errorCnt: 0,
+    nonEffectStack: null,
+    effectStack: null,
+    contextStack: null,
+    fdescStack: null,
+    functionInited: false,
+    blockCriticalInserted: false,
+    currentBlock: null,
+    firstCalledFunction: false,
+    callingState: Type.FuncUseTypes.non,
+    callingStateTemp: Type.FuncUseTypes.non,
+    exceptionStack: null,
 };
 
 

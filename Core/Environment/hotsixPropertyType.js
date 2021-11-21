@@ -1,30 +1,29 @@
 let normalKeys = {
-    "length":[
+    "length": [
         "plus"
     ],
-    "set":[
+    "set": [
         "function"
     ],
-    "get":[
+    "get": [
         "function"
     ],
-    "has":[
+    "has": [
         "function"
     ],
-    "deleteProperty":[
+    "deleteProperty": [
         "function"
     ],
-    "toString":[
+    "toString": [
         "function"
     ],
-    "valueOf":[
+    "valueOf": [
         "function"
     ],
 }
 
 
-let symbolKeys = {
-};
+let symbolKeys = {};
 
 
 module.exports = normalKeys;

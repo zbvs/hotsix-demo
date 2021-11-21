@@ -12,16 +12,16 @@ const config = require("./../../Config");
 const debug = config.debug;
 
 
-
 class Scope {
-    constructor(parent=null, isFunction = true){
+    constructor(parent = null, isFunction = true) {
         this.vars = [];
         this.parent = parent;
         this.isFunction = isFunction;
     }
-    dump(){
+
+    dump() {
         util.lprint("Scope Dump");
-        for(let i in this.vars){
+        for (let i in this.vars) {
             util.dprint(this.vars[i]);
             util.dprint(this.vars[i].Type);
         }
@@ -30,12 +30,12 @@ class Scope {
 
 
 class Runtime {
-    constructor(program, environment){
+    constructor(program, environment) {
         this.varNumber = 0;
         this.currentScope = null;
         this.globalScope = this.createScope(null);
         this.program = program;
-        this.scopeStack =  [];
+        this.scopeStack = [];
         this.env = environment;
         //(TODO is it safe?
         this.builtinObjectMap = new Map();
@@ -48,19 +48,22 @@ class Runtime {
         Recorder.runtime = this;
     }
 
-    logRecord(nodeStack){
+    logRecord(nodeStack) {
         //(TODO need more efficient way
         this.Recorder.CodeRecorder.backupCode(nodeStack);
         this.renewRootCode();
     }
-    insertCalling(name){
+
+    insertCalling(name) {
         this.callingFunctions.push(name);
     }
-    isInCalling(name){
+
+    isInCalling(name) {
         let index = this.callingFunctions.indexOf(name);
         return index > -1;
     }
-    removeCalling(name){
+
+    removeCalling(name) {
         let index = this.callingFunctions.indexOf(name);
         if (index > -1)
             this.callingFunctions.splice(index, 1);
@@ -69,10 +72,10 @@ class Runtime {
 
     }
 
-    createScope(parent=null, isFunction = true){
+    createScope(parent = null, isFunction = true) {
         let scope = new Scope(parent, isFunction);
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             scope = util.getDebugProxy(scope);
         }
         //)DEBUG_CHECK
@@ -80,14 +83,14 @@ class Runtime {
     }
 
 
-    pushScope(scope){
+    pushScope(scope) {
         this.scopeStack.push(this.currentScope);
         this.currentScope = scope;
         return this.scopeStack.length;
     }
 
-    popScope(){
-        if(debug && this.scopeStack.length == 0){
+    popScope() {
+        if (debug && this.scopeStack.length == 0) {
             util.unreachable();
         }
         this.currentScope = this.scopeStack.pop();
@@ -95,7 +98,7 @@ class Runtime {
     }
 
 
-    addBuiltinFunction(object, name, baseType){
+    addBuiltinFunction(object, name, baseType) {
         let cur_scope = this.globalScope;
         let varName = environment.Variable.createVarName(name, name)
         let variable = this.createBuiltinVariable(varName);
@@ -116,25 +119,25 @@ class Runtime {
         cur_scope.vars.push(variable);
     }
 
-    addFDesc(name,desc){
+    addFDesc(name, desc) {
         let arr = desc.argv;
         let fdesc = Type.createFDesc(null);
         fdesc.forbidden = desc.forbidden;
         fdesc.needThis = desc.needThis;
-        if(fdesc.needThis)
+        if (fdesc.needThis)
             fdesc.useType = Type.FuncUseTypes.call;
         fdesc.inited = true;
         fdesc.isBuiltin = true;
         let type;
 
-        for(let info of arr){
-            switch( info.k ){
+        for (let info of arr) {
+            switch (info.k) {
                 case "Argument":
-                case "Array":{
+                case "Array": {
                     type = new Type(Type.baseTypes.array);
                     break;
                 }
-                case "Function":{
+                case "Function": {
                     type = new Type(Type.baseTypes.function);
                     break;
                 }
@@ -143,7 +146,7 @@ class Runtime {
                 case "Function|Array":
                 case "Anything":
                 case "Identifier":
-                case "options":{
+                case "options": {
                     type = new Type(Type.baseTypes.object);
                     break;
                 }
@@ -163,7 +166,7 @@ class Runtime {
                     type = new Type(Type.baseTypes.string);
                     break;
                 }
-                case "Boolean":{
+                case "Boolean": {
                     type = new Type(Type.baseTypes.boolean);
                     break;
                 }
@@ -179,24 +182,24 @@ class Runtime {
                 case "flags":
                 case "iterable":
                 case "Code":
-                case "locales":{
+                case "locales": {
                     type = new Type(Type.baseTypes.any);
                     fdesc.forbidden = true;
                     break;
                 }
-                default:{
+                default: {
                     util.unreachable();
                 }
             }
-            if(info.o)
+            if (info.o)
                 type.optional = true;
             fdesc.params.push(type);
         }
         this.Sandbox.operand1 = fdesc;
         let code = `${name}`;
-        let funcObj = Type.vmAnalyzeCode(this.Sandbox,code);
+        let funcObj = Type.vmAnalyzeCode(this.Sandbox, code);
 
-        if(!Type.hasOwnProperty(funcObj, Type.specialKeys.keyFdesc)) {
+        if (!Type.hasOwnProperty(funcObj, Type.specialKeys.keyFdesc)) {
             Object.defineProperty(funcObj, Type.specialKeys.keyFdesc, {
                 enumerable: false,
                 writable: false,
@@ -212,12 +215,12 @@ class Runtime {
         }
     }
 
-    getVariable(cur_scope, requireType, noArg = false, variableFrist=false, strict=false, noForbidden=false, fUseType = "", noNeedThis = false){
+    getVariable(cur_scope, requireType, noArg = false, variableFrist = false, strict = false, noForbidden = false, fUseType = "", noNeedThis = false) {
         let foundVar;
         let any_var;
         let varArray = cur_scope.vars;
-        if(varArray.length === 0) {
-            if(cur_scope.parent)
+        if (varArray.length === 0) {
+            if (cur_scope.parent)
                 return this.getVariable(cur_scope.parent, requireType, true, variableFrist, strict, noForbidden, noNeedThis);
             return null;
         }
@@ -227,7 +230,7 @@ class Runtime {
         //INIT
         let length = varArray.length;
         let start = 0;
-        if(length > 10)
+        if (length > 10)
             start = (length - 10);
         let end = util.randRange(start, length);
         let current = end;
@@ -237,54 +240,50 @@ class Runtime {
             current = current % length;
 
             //BODY
-            if (!(noArg && any_var.isArgument)){
+            if (!(noArg && any_var.isArgument)) {
                 if (Type.isSubsumeType(requireType, any_var.Type.baseType)) {
                     //function --
-                    if(Type.isSubsumeType(Type.baseTypes.function, any_var.Type.baseType)){
-                        if(noForbidden && Type.hasOwnProperty(any_var.Type.value, Type.specialKeys.keyFdesc) && any_var.Type.value[Type.specialKeys.keyFdesc].forbidden){
+                    if (Type.isSubsumeType(Type.baseTypes.function, any_var.Type.baseType)) {
+                        if (noForbidden && Type.hasOwnProperty(any_var.Type.value, Type.specialKeys.keyFdesc) && any_var.Type.value[Type.specialKeys.keyFdesc].forbidden) {
                             compatible_var = any_var;
-                        }else if(Type.hasOwnProperty(any_var.Type.value, Type.specialKeys.keyFdesc) && (
+                        } else if (Type.hasOwnProperty(any_var.Type.value, Type.specialKeys.keyFdesc) && (
                             this.isInCalling(any_var.Type.value[Type.specialKeys.keyFdesc].name) ||
                             (any_var.Type.value[Type.specialKeys.keyFdesc].useType !== "" && fUseType !== "" && any_var.Type.value[Type.specialKeys.keyFdesc].useType !== fUseType) ||
-                                // We don't use tagged template anymore.
+                            // We don't use tagged template anymore.
                             //fUseType === Type.FuncUseTypes.template && (any_var.Type.value[Type.specialKeys.keyFdesc].isBuiltin === true && any_var.Type.value[Type.specialKeys.keyFdesc].needThis === true ))
-                            noNeedThis && (any_var.Type.value[Type.specialKeys.keyFdesc].needThis === true )
-                            )
+                            noNeedThis && (any_var.Type.value[Type.specialKeys.keyFdesc].needThis === true)
+                        )
                         ) {
                             compatible_var = any_var;
-                        } else if( variableFrist && !any_var.Type.value[Type.specialKeys.keyIsCustom] ) {
+                        } else if (variableFrist && !any_var.Type.value[Type.specialKeys.keyIsCustom]) {
                             compatible_var = any_var;
-                        }
-                        else {
+                        } else {
                             foundVar = any_var;
                             break;
                         }
-                    }
-                    else {
+                    } else {
                         foundVar = any_var;
                         break;
                     }
-                }
-                else if (Type.isSubsumeType(any_var.Type.baseType, requireType)) {
+                } else if (Type.isSubsumeType(any_var.Type.baseType, requireType)) {
                     compatible_var = any_var;
                 }
             }
 
             //BREAK CONDITION
-            if(current === end)
+            if (current === end)
                 break;
         }
 
         //RANDOM ITERATE END
-        if( foundVar ){
+        if (foundVar) {
             return foundVar;
-        }
-        else if( compatible_var && strict === false){
+        } else if (compatible_var && strict === false) {
             return compatible_var;
         }
 
 
-        if(cur_scope.parent)
+        if (cur_scope.parent)
             return this.getVariable(cur_scope.parent, requireType, true, variableFrist, strict, noForbidden, noNeedThis);
 
 
@@ -292,12 +291,12 @@ class Runtime {
         return null;
     }
 
-    getBuiltin(requireType , strict=false, fUseType = "", noNeedThis = false){
+    getBuiltin(requireType, strict = false, fUseType = "", noNeedThis = false) {
         let foundVar;
         let any_var;
         let cur_scope = this.globalScope;
         let varArray = cur_scope.vars;
-        if(varArray.length === 0)
+        if (varArray.length === 0)
             return null;
         let compatible_var;
 
@@ -310,100 +309,101 @@ class Runtime {
             any_var = varArray[current++];
             current = current % length;
             //BODY
-            if( Type.isSubsumeType(requireType,any_var.Type.baseType) ) {
-                if(Type.isSubsumeType(Type.baseTypes.function, any_var.Type.baseType)){
-                    if ( !(noNeedThis && (any_var.Type.value[Type.specialKeys.keyFdesc].needThis === true )) ) {
+            if (Type.isSubsumeType(requireType, any_var.Type.baseType)) {
+                if (Type.isSubsumeType(Type.baseTypes.function, any_var.Type.baseType)) {
+                    if (!(noNeedThis && (any_var.Type.value[Type.specialKeys.keyFdesc].needThis === true))) {
                         foundVar = any_var;
                         break;
                     }
-                }else {
+                } else {
                     foundVar = any_var;
                     break;
                 }
-            }
-            else if( Type.isSubsumeType(any_var.Type.baseType, requireType)){
+            } else if (Type.isSubsumeType(any_var.Type.baseType, requireType)) {
                 compatible_var = any_var;
             }
             //BREAK CONDITION
-            if(current === end)
+            if (current === end)
                 break;
         }
         //RANDOM ITERATE END
 
-        if( foundVar ){
+        if (foundVar) {
             return foundVar;
-        }
-        else if( compatible_var && strict === false){
+        } else if (compatible_var && strict === false) {
             return compatible_var;
         }
         return null;
     }
 
-    getVariableBuiltin(requireType, strict, variableFirst=false, noForbidden=false, fUseType = "", noNeedThis = false){
+    getVariableBuiltin(requireType, strict, variableFirst = false, noForbidden = false, fUseType = "", noNeedThis = false) {
         let variable;
-        if( variableFirst || util.randRange(0, 4) ) {
-            variable = this.getVariable(this.currentScope, requireType, false, variableFirst,strict, noForbidden, fUseType, noNeedThis);
+        if (variableFirst || util.randRange(0, 4)) {
+            variable = this.getVariable(this.currentScope, requireType, false, variableFirst, strict, noForbidden, fUseType, noNeedThis);
             if (variable)
                 return variable;
             variable = this.getBuiltin(requireType, strict, fUseType, noNeedThis);
             if (variable)
                 return variable;
             util.unreachable();
-        }
-        else{
+        } else {
             variable = this.getBuiltin(requireType, strict, fUseType, noNeedThis);
-            if(variable)
+            if (variable)
                 return variable;
-            variable = this.getVariable(this.currentScope, requireType, false, variableFirst,strict, noForbidden, fUseType, noNeedThis);
-            if(variable)
+            variable = this.getVariable(this.currentScope, requireType, false, variableFirst, strict, noForbidden, fUseType, noNeedThis);
+            if (variable)
                 return variable;
             util.unreachable();
         }
         util.unreachable();
     }
+
     //Variable
-    createVariable(){
+    createVariable() {
         let name = "v" + this.varNumber++;
-        let varName = Variable.createVarName(name,name);
+        let varName = Variable.createVarName(name, name);
         let variable = new Variable(varName);
         //(DEBUG_CHECK
-        if(debug)
+        if (debug)
             variable = util.getDebugProxy(variable);
         //)DEBUG_CHECK
         return variable;
     }
-    registerVariable(variable){
 
-        if(debug && variable.Type.baseType !== Type.baseTypes.null && variable.Type.value === null) {
+    registerVariable(variable) {
+
+        if (debug && variable.Type.baseType !== Type.baseTypes.null && variable.Type.value === null) {
             throw new util.DebugError("Invalid Type");
         }
         this.currentScope.vars.push(variable);
     }
-    createVariableWithName(boxed,origin, isArgument = false){
-        let varName = Variable.createVarName(boxed,origin);
+
+    createVariableWithName(boxed, origin, isArgument = false) {
+        let varName = Variable.createVarName(boxed, origin);
         let variable = new Variable(varName, isArgument);
         //(DEBUG_CHECK
-        if(debug)
+        if (debug)
             variable = util.getDebugProxy(variable);
         //)DEBUG_CHECK
         return variable;
     }
 
-    createBuiltinVariable(varName){
+    createBuiltinVariable(varName) {
         let variable = new Variable(varName);
         variable.isBuiltin = true;
         return variable;
     }
-    getVirtualValue(varName){
+
+    getVirtualValue(varName) {
         return this.Sandbox[varName];
     }
 
-    createTypeLiteral(baseType){
-        if(debug && baseType === "undefined")
+    createTypeLiteral(baseType) {
+        if (debug && baseType === "undefined")
             util.unreachable();
         let type = new Type(baseType);
         type.baseType = baseType;
-        switch(baseType){
+        switch (baseType) {
             case Type.baseTypes.function:
             case Type.baseTypes.constructor: {
                 util.unreachable();
@@ -415,7 +415,7 @@ class Runtime {
                     enumerable: false,
                     writable: false,
                     configurable: false,
-                    value:type
+                    value: type
                 });
                 break;
             }
@@ -425,7 +425,7 @@ class Runtime {
                     enumerable: false,
                     writable: false,
                     configurable: false,
-                    value:type
+                    value: type
                 });
                 break;
             }
@@ -433,43 +433,45 @@ class Runtime {
         }
 
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             type = util.getDebugProxy(type);
         }
         //)DEBUG_CHECK
         return type;
     }
-    createBareType(baseType){
+
+    createBareType(baseType) {
         let type = new Type(baseType);
         type.baseType = baseType;
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             type = util.getDebugProxy(type);
         }
         //)DEBUG_CHECK
         return type;
     }
-    createTypeFunction(nodePair, funcName){
+
+    createTypeFunction(nodePair, funcName) {
         let code = Type.functionTrapCodeFront + funcName + Type.functionTrapCodeTail;
-        let func = Type.vmAnalyzeCode(this.Sandbox,code);
+        let func = Type.vmAnalyzeCode(this.Sandbox, code);
         let scope = this.createScope(this.currentScope);
         Object.defineProperty(func, Type.specialKeys.keyFdesc, {
             enumerable: false,
             writable: false,
             configurable: false,
-            value:Type.createFDesc(scope)
+            value: Type.createFDesc(scope)
         });
         Object.defineProperty(func, Type.specialKeys.keyIsCustom, {
             enumerable: false,
             writable: false,
             configurable: false,
-            value:true
+            value: true
         });
         Object.defineProperty(func, Type.specialKeys.keyApply, {
             enumerable: false,
             writable: false,
             configurable: false,
-            value:this.Sandbox.apply_
+            value: this.Sandbox.apply_
         });
         func[Type.specialKeys.keyFdesc].nodePair = nodePair;
         func[Type.specialKeys.keyFdesc].name = funcName;
@@ -478,7 +480,7 @@ class Runtime {
         return Type.createTypeWith(func);
     }
 
-    createBuiltinType(baseType, object){
+    createBuiltinType(baseType, object) {
         let type = new Type(baseType);
         type.isBuiltin = true;
         type.value = object;
@@ -487,43 +489,49 @@ class Runtime {
             enumerable: false,
             writable: false,
             configurable: false,
-            value:type
+            value: type
         });
 
         //(DEBUG_CHECK
-        if(debug){
+        if (debug) {
             type = util.getDebugProxy(type);
         }
         //)DEBUG_CHECK
         return type;
     }
-    registerFdesc(fdesc){
-        if(this.fdescMap.has(fdesc.name))
+
+    registerFdesc(fdesc) {
+        if (this.fdescMap.has(fdesc.name))
             throw new util.DebugError();
-        if((fdesc.name) === "")
+        if ((fdesc.name) === "")
             throw new util.DebugError();
-        if(fdesc.name.length === 0)
+        if (fdesc.name.length === 0)
             throw new util.DebugError();
         this.fdescMap.set(fdesc.name, fdesc);
     }
-    getFdesc(name){
+
+    getFdesc(name) {
         return this.fdescMap.get(name);
     }
-    initSandbox(generator){
+
+    initSandbox(generator) {
         this.Sandbox = {};
         //(TODO to avoid sandbox escaping
         this.Sandbox.__proto__ = null;
-        V8EnvInit.initSandbox(this,generator);
+        V8EnvInit.initSandbox(this, generator);
     }
-    renewRootCode(){
+
+    renewRootCode() {
         let code = Type.vmGenCode(this.program.ast) + '\n';
         this.Recorder.CodeRecorder.writeRootFile(code);
     }
-    eraseOriginCode(fname=""){
+
+    eraseOriginCode(fname = "") {
         this.Recorder.CodeRecorder.eraseOriginFile(fname);
     }
-    updateOriginCode(ast){
-        if(ast.type === "BlockStatement"){
+
+    updateOriginCode(ast) {
+        if (ast.type === "BlockStatement") {
             let program = es6.createNode("Program");
             program.body = ast;
             ast = program;
@@ -531,17 +539,19 @@ class Runtime {
         let code = Type.vmGenCode(ast) + '\n';
         this.Recorder.CodeRecorder.updateOriginFile(code);
     }
-    updateBoxedCode(ast){
+
+    updateBoxedCode(ast) {
         let code = Type.vmGenCode(ast) + '\n';
         this.Recorder.CodeRecorder.updateBoxedFile(code);
     }
-    createVariablesWith(keys, targets){
-        for(let key of keys) {
+
+    createVariablesWith(keys, targets) {
+        for (let key of keys) {
             let target = targets[key];
             let type;
             let baseType = typeof target;
             if (Type.isSubsumeType(Type.baseTypes.object, baseType)) {
-                if (debug && !Type.hasOwnProperty(target,Type.specialKeys.keyTypeRef)) {
+                if (debug && !Type.hasOwnProperty(target, Type.specialKeys.keyTypeRef)) {
                     util.unreachable();
                 }
                 type = target[Type.specialKeys.keyTypeRef];
@@ -553,16 +563,17 @@ class Runtime {
             this.registerVariable(variable);
         }
     }
-    createArgumentWith(target, number){
+
+    createArgumentWith(target, number) {
         let type;
         let baseType = typeof target;
-        if (Type.isSubsumeType(Type.baseTypes.object, baseType) && target !== null && Type.hasOwnProperty(target, Type.specialKeys.keyTypeRef) ) {
+        if (Type.isSubsumeType(Type.baseTypes.object, baseType) && target !== null && Type.hasOwnProperty(target, Type.specialKeys.keyTypeRef)) {
             type = target[Type.specialKeys.keyTypeRef];
         } else {
             type = Type.createTypeWith(target);
         }
         let name = "a" + number;
-        let variable = this.createVariableWithName(name,name, true);
+        let variable = this.createVariableWithName(name, name, true);
         variable.Type = type;
         this.registerVariable(variable);
         return variable;
@@ -570,17 +581,16 @@ class Runtime {
 }
 
 
-
 const environment = {
-    Scope:Scope,
-    Type:Type,
-    Variable:Variable,
-    typeDB:null,
-    propertyTypeMap:null,
-    needThisList:null,
+    Scope: Scope,
+    Type: Type,
+    Variable: Variable,
+    typeDB: null,
+    propertyTypeMap: null,
+    needThisList: null,
     //Key, outType
     //Environment
-    createRuntime(program){
+    createRuntime(program) {
         let runtime = new Runtime(program, environment);
         this.runtime = runtime;
         //sandbox is the biggest object that are sandboxed, and recorded.
@@ -589,22 +599,22 @@ const environment = {
     },
 
     //Variabale
-    checkOutType(cur_node){
+    checkOutType(cur_node) {
         let baseType = cur_node.outType.baseType;
         let value = cur_node.outType.value;
         //(DEBUG_CHECK
-        if(debug) {
+        if (debug) {
             if (typeof cur_node.outType !== "object") {
                 util.unreachable();
             }
         }
         //)DEBUG_CHECK
     },
-    isContainNonPrintable(data){
+    isContainNonPrintable(data) {
         return /[\x00-\x1F\x80-\xFF]/.test(data);
     },
-    updateType(key, _Type){
-        if(config.doUpdateType) {
+    updateType(key, _Type) {
+        if (config.doUpdateType) {
             if (key.substr(0, 3) === "_x_" || key.substr(0, 3) === "_f_" || !isNaN(key) || this.isContainNonPrintable(key))
                 return;
 
@@ -614,14 +624,14 @@ const environment = {
                 this.propertyTypeMap[key].push(_Type.baseType);
         }
     },
-    writeDB(){
+    writeDB() {
         this.typeDB.write();
     },
-    compatibleKeyOf(keys, requireType){
+    compatibleKeyOf(keys, requireType) {
         //( TODO too slow..
         let curArray = keys;
         let length = curArray.length;
-        if(length === 0 )
+        if (length === 0)
             return null;
         let start = 0;
         let end = util.randRange(start, length);
@@ -632,38 +642,38 @@ const environment = {
             let key = curArray[current++];
             current = current % length;
             //BODY
-            if( Type.hasOwnProperty(this.propertyTypeMap, key)) {
+            if (Type.hasOwnProperty(this.propertyTypeMap, key)) {
                 let propTypes = this.propertyTypeMap[key];
-                for( let type of propTypes)
-                    if(Type.isSubsumeType(type,requireType))
+                for (let type of propTypes)
+                    if (Type.isSubsumeType(type, requireType))
                         return key;
-            }else if( key.indexOf("_x_") === 0){
+            } else if (key.indexOf("_x_") === 0) {
                 //always compatible.
                 return key;
             }
 
             //BREAK CONDITION
-            if(current === end)
+            if (current === end)
                 break;
         }
         return null;
     },
-    getCompatibleKey(requireType){
+    getCompatibleKey(requireType) {
         let key;
-        if( Type.isSubsumeType(Type.baseTypes.function, requireType) && util.randRange(0,3)){
-            key = this.getCompatibleKeyFrom(requireType,this.preferedKeys);
-            if(key)
+        if (Type.isSubsumeType(Type.baseTypes.function, requireType) && util.randRange(0, 3)) {
+            key = this.getCompatibleKeyFrom(requireType, this.preferedKeys);
+            if (key)
                 return key;
         }
-        return this.getCompatibleKeyFrom(requireType,this.propertyKeys);
+        return this.getCompatibleKeyFrom(requireType, this.propertyKeys);
     },
-    getCompatibleKeyFrom(requireType, fromArray){
+    getCompatibleKeyFrom(requireType, fromArray) {
         //RANDOM ITERATE START
         //INIT
 
         let curArray = fromArray;
         let length = curArray.length;
-        if(length === 0 )
+        if (length === 0)
             return null;
 
         let start = 0;
@@ -675,20 +685,20 @@ const environment = {
             current = current % length;
             //BODY
             let propTypes = this.propertyTypeMap[key];
-            for( let type of propTypes)
-                if(Type.isSubsumeType(type,requireType))
+            for (let type of propTypes)
+                if (Type.isSubsumeType(type, requireType))
                     return key;
             //BREAK CONDITION
-            if(current === end)
+            if (current === end)
                 break;
         }
         return null;
         //RANDOM ITERATE END
     },
-    getCompatibleSymbolKey(requireType){
+    getCompatibleSymbolKey(requireType) {
         let curArray = this.symbolKeys;
         let length = curArray.length;
-        if(length === 0 )
+        if (length === 0)
             return null;
 
         let start = 0;
@@ -700,32 +710,30 @@ const environment = {
             current = current % length;
             //BODY
             let propTypes = this.symbolTypeMap[key];
-            for( let type of propTypes)
-                if(Type.isSubsumeType(type,requireType))
+            for (let type of propTypes)
+                if (Type.isSubsumeType(type, requireType))
                     return "Symbol." + key;
             //BREAK CONDITION
-            if(current === end)
+            if (current === end)
                 break;
         }
         return null;
     },
-    logNeedThis(fname){
-        if( fname.substr(0,3) === "_x_" || fname.substr(0,3) === "_f_" || !isNaN(fname) || fname.includes(" "))
+    logNeedThis(fname) {
+        if (fname.substr(0, 3) === "_x_" || fname.substr(0, 3) === "_f_" || !isNaN(fname) || fname.includes(" "))
             return;
 
-        if( !this.needThisList.includes(fname) && fname !== ""){
+        if (!this.needThisList.includes(fname) && fname !== "") {
             this.needThisList.push(fname);
         }
     },
-    commitNeedThis(){
+    commitNeedThis() {
         let data = JSON.stringify(this.needThisList);
         fs.writeFileSync(config.needThisListPath, data);
 
     }
 
 };
-
-
 
 
 {
@@ -743,10 +751,10 @@ const environment = {
     Object.prototype[Type.specialKeys.keyHostCorruptionCheck] = true;
     //////// Special Primitive Value//////////////////////////////
     environment.interestingIntegersStrict = [
-        0x10,0x40,0x100,0x400, 0x1000,0x4000, 0x10000,0x40000
+        0x10, 0x40, 0x100, 0x400, 0x1000, 0x4000, 0x10000, 0x40000
     ];
-    if(debug){
-        environment.interestingIntegers  = [
+    if (debug) {
+        environment.interestingIntegers = [
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 64,
 
             127, 128, 129,
@@ -777,10 +785,10 @@ const environment = {
             //9007199254740991, 9007199254740992, 9007199254740993,
         ];
     }
-    environment.interestingDoubles = [1.1,2.2];
+    environment.interestingDoubles = [1.1, 2.2];
     environment.interestingSymbols = ["asyncIterator", "hasInstance", "isConcatSpreadable", "iterator", "match", "matchAll", "replace", "search", "species", "split", "toPrimitive", "toStringTag", "unscopables"];
     environment.propertyKeys = Object.keys(environment.propertyTypeMap);
-    environment.preferedKeys = ["valueOf","toString"];
+    environment.preferedKeys = ["valueOf", "toString"];
     //(TODO supporting async function
     //environment.symbolKeys = ["asyncIterator", "hasInstance", "isConcatSpreadable", "iterator", "match", "matchAll", "replace", "search", "species", "split", "toPrimitive", "toStringTag", "unscopables"];
     environment.symbolKeys = ["hasInstance", "isConcatSpreadable", "search", "species", "split", "toPrimitive", "toStringTag", "unscopables"];
@@ -812,7 +820,8 @@ const environment = {
     };
 
     environment.interestingStrings = environment.propertyKeys;
-};
+}
+;
 
 module.exports = environment;
 

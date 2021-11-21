@@ -1,19 +1,18 @@
-
 const fs = require("fs");
 const config = require("./../../Config");
 let V8EnvInitPath = "./Core/Environment/V8EnvInit.js";
 
 var Constructors = [
-    'ArrayBuffer',    'BigInt64Array',
+    'ArrayBuffer', 'BigInt64Array',
     'BigUint64Array', 'DataView',
-    'Float32Array',   'Float64Array',
-    'Int16Array',     'Int32Array',
-    'Int8Array',      'Map',
-    'Promise',        'Proxy',
-    'Set',            'SharedArrayBuffer',
-    'Uint16Array',    'Uint32Array',
-    'Uint8Array',     'Uint8ClampedArray',
-    'WeakMap',        'WeakSet'
+    'Float32Array', 'Float64Array',
+    'Int16Array', 'Int32Array',
+    'Int8Array', 'Map',
+    'Promise', 'Proxy',
+    'Set', 'SharedArrayBuffer',
+    'Uint16Array', 'Uint32Array',
+    'Uint8Array', 'Uint8ClampedArray',
+    'WeakMap', 'WeakSet'
 ];
 
 /*
@@ -30,15 +29,15 @@ var Functions = [
 */
 
 var Functions = [
-    'Array',       'Boolean',
-    'Symbol',       'BigInt',
-    'Number',      'Object',
-          'String',
+    'Array', 'Boolean',
+    'Symbol', 'BigInt',
+    'Number', 'Object',
+    'String',
 ];
 
 var Errors = [
-    'Error',       'EvalError',
-    'RangeError',  'ReferenceError',
+    'Error', 'EvalError',
+    'RangeError', 'ReferenceError',
     'SyntaxError', 'TypeError',
     'URIError'
 ];
@@ -46,13 +45,10 @@ var Errors = [
 var NopFunctions = [
     'gc'
 ];
-var NonConstructors = [
+var NonConstructors = [];
 
-];
-
-var BuiltinOthers = ["JSON","Math","Symbol"];
-var BuiltinFunctions = ["escape","eval","isFinite","isNaN","parseFloat","parseInt","unescape"];
-
+var BuiltinOthers = ["JSON", "Math", "Symbol"];
+var BuiltinFunctions = ["escape", "eval", "isFinite", "isNaN", "parseFloat", "parseInt", "unescape"];
 
 
 var header = `
@@ -70,7 +66,7 @@ function initSandbox(runtime,generator) {
 
 
 var body = '';
-for(let name of Functions){
+for (let name of Functions) {
     body += `
     let ${name + "_"} = Type.vmAnalyzeCode(runtime.Sandbox, "${name}");
     runtime.Sandbox.operand1 = ${name + "_"};
@@ -80,7 +76,7 @@ for(let name of Functions){
 }
 
 
-for(let name of NopFunctions){
+for (let name of NopFunctions) {
     body += `
     let ${name + "_"} = nopFunction;
     runtime.Sandbox.operand1 = ${name + "_"};
@@ -89,7 +85,7 @@ for(let name of NopFunctions){
     `
 }
 
-for(let name of NonConstructors){
+for (let name of NonConstructors) {
     body += `
     let ${name + "_"} = Type.vmAnalyzeCode(runtime.Sandbox, "${name}");
     runtime.Sandbox.operand1 = ${name + "_"};
@@ -98,8 +94,8 @@ for(let name of NonConstructors){
     `
 }
 
-if ( config.useConstructors === true){
-    for(let name of Constructors){
+if (config.useConstructors === true) {
+    for (let name of Constructors) {
         body += `
     let ${name + "_"} = Type.vmAnalyzeCode(runtime.Sandbox, "${name}");
     runtime.Sandbox.operand1 = ${name + "_"};
@@ -110,7 +106,7 @@ if ( config.useConstructors === true){
 }
 
 
-for(let name of Errors){
+for (let name of Errors) {
     body += `
     let ${name + "_"} = Type.vmAnalyzeCode(runtime.Sandbox, "${name}");
     runtime.Sandbox.${name} = ${name + "_"};
@@ -139,7 +135,6 @@ module.exports = {
     initSandbox:initSandbox,
 }
 `;
-
 
 
 var result = header + body + footer;

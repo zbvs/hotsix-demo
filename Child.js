@@ -1,31 +1,29 @@
-
 const createProgram = require('./Core/Environment/Program.js').createProgram;
 const config = require("./Config");
 const util = require("./Util")
 const generator = require("./Core/Generator");
 const codeRecorder = require("./Recorder").CodeRecorder;
-const { spawn } = require('child_process');
+const {spawn} = require('child_process');
 
 const prefix = "Child:";
 
 
 const Protocol = {
-    init:"init",
-    generate:"generate",
-    execute:"execute",
+    init: "init",
+    generate: "generate",
+    execute: "execute",
 
 
-    childon:"childon",
-    inited:"inited",
-    generated:"generated",
-    finish:"finish",
+    childon: "childon",
+    inited: "inited",
+    generated: "generated",
+    finish: "finish",
 };
 
 const clientMsg = {
-    packet:"",
-    data:null
+    packet: "",
+    data: null
 };
-
 
 
 clientMsg.packet = Protocol.childon;
@@ -33,9 +31,8 @@ process.send(clientMsg);
 
 
 let print = (...arg) => {
-    console.log(prefix,...arg);
+    console.log(prefix, ...arg);
 };
-
 
 
 let generateOne = (fuzzChild) => {
@@ -44,21 +41,20 @@ let generateOne = (fuzzChild) => {
     fuzzChild.isError = false;
     try {
         //(TODO: do we need this check?
-        if(fuzzChild.round !== fuzzChild.try){
+        if (fuzzChild.round !== fuzzChild.try) {
             print("something is wrong...", fuzzChild.round, fuzzChild.try)
             process.kill(fuzzChild.ppid, "SIGKILL");
         }
 
         fuzzChild.try++;
         generator.JITProgram(program);
-    }catch (e){
+    } catch (e) {
         fuzzChild.error++;
         fuzzChild.isError = true;
     }
 
 };
 
-  
 
 let childMain = () => {
     let fuzzChild = {};
@@ -81,15 +77,22 @@ let childMain = () => {
 
     let onData = (data_str) => {
 
-        if(typeof data_str !== "string")
+        if (typeof data_str !== "string")
             data_str = String.fromCharCode.apply(data_str, data_str);
 
         let size = data_str.length;
-        if(size >= 4)
-            data_str = data_str.substr(size-4,size);
+        if (size >= 4)
+            data_str = data_str.substr(size - 4, size);
 
-        if(data_str === "DONE") {
-            let result = {isCrash: false, targetpid: fuzzChild.spawned.pid, workerId: fuzzChild.workerId, tryCnt:fuzzChild.try, errorCnt:fuzzChild.error, isError:fuzzChild.isError};
+        if (data_str === "DONE") {
+            let result = {
+                isCrash: false,
+                targetpid: fuzzChild.spawned.pid,
+                workerId: fuzzChild.workerId,
+                tryCnt: fuzzChild.try,
+                errorCnt: fuzzChild.error,
+                isError: fuzzChild.isError
+            };
             clientMsg.packet = Protocol.finish;
             clientMsg.data = result;
             process.send(clientMsg);
@@ -100,7 +103,14 @@ let childMain = () => {
     let onClose = () => {
         console.log("on crash:");
         //assume that it is crash. child would be closed also.
-        let result = {isCrash: true, targetpid: fuzzChild.spawned.pid, workerId: fuzzChild.workerId, tryCnt:fuzzChild.try, errorCnt:fuzzChild.error, isError:fuzzChild.isError};
+        let result = {
+            isCrash: true,
+            targetpid: fuzzChild.spawned.pid,
+            workerId: fuzzChild.workerId,
+            tryCnt: fuzzChild.try,
+            errorCnt: fuzzChild.error,
+            isError: fuzzChild.isError
+        };
         clientMsg.packet = Protocol.finish;
         clientMsg.data = result;
         process.send(clientMsg);
@@ -112,7 +122,7 @@ let childMain = () => {
                 fuzzChild.workerId = masterMsg.data.workerId;
                 fuzzChild.ppid = masterMsg.data.ppid;
                 config.doWriteDB = false;
-                if(config.doWriteDBAllow === true && masterMsg.data.doWriteDB === true)
+                if (config.doWriteDBAllow === true && masterMsg.data.doWriteDB === true)
                     config.doWriteDB = true;
                 config.doWriteNT = masterMsg.data.doWriteNT;
                 config.workerDir = config.storagePath + "workdir/" + "worker" + fuzzChild.workerId + "/";
@@ -121,7 +131,7 @@ let childMain = () => {
                 let spawned = spawnTarget(config.arguments);
                 fuzzChild.spawned = spawned;
                 clientMsg.packet = Protocol.inited;
-                clientMsg.data = {targetpid:spawned.pid, rootFile:codeRecorder.rootFile};
+                clientMsg.data = {targetpid: spawned.pid, rootFile: codeRecorder.rootFile};
                 process.send(clientMsg);
                 break;
             }
@@ -129,7 +139,7 @@ let childMain = () => {
                 fuzzChild.round = masterMsg.data.round;
                 generateOne(fuzzChild);
                 clientMsg.packet = Protocol.generated;
-                clientMsg.data = {round:fuzzChild.round};
+                clientMsg.data = {round: fuzzChild.round};
                 process.send(clientMsg);
                 break;
             }
@@ -140,12 +150,13 @@ let childMain = () => {
             }
         }
     }
+
     process.on('message', Child);
 };
 
-process.on("uncaughtException", function(err){
-    if(!err.message.includes("read ECONNRESET")){
-        process.exit();      
+process.on("uncaughtException", function (err) {
+    if (!err.message.includes("read ECONNRESET")) {
+        process.exit();
     }
 });
 

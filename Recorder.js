@@ -4,11 +4,11 @@ const escodegen = require('./lib/escodegen-bigint');
 const fs = require("fs");
 
 const CodeRecorder = {
-    setPath(){
+    setPath() {
         this.workerDir = config.workerDir;
 
 
-        if (!fs.existsSync(this.workerDir)){
+        if (!fs.existsSync(this.workerDir)) {
             fs.mkdirSync(this.workerDir);
         }
 
@@ -18,38 +18,38 @@ const CodeRecorder = {
         this.boxedFile = this.workerDir + "boxed.js";
         this.backupFile = "";
     },
-    deleteOriginFile(){
+    deleteOriginFile() {
         fs.unlinkSync(this.originFile);
     },
-    setFileLevel(level){
+    setFileLevel(level) {
         this.originFile = this.workerDir + "origin" + level + ".js";
         this.backupFile = this.workerDir + "backup" + level + ".js";
     },
-    eraseAllFile(){
+    eraseAllFile() {
         fs.writeFileSync(this.boxedFile, "");
         fs.writeFileSync(this.errorFile, "");
     },
-    writeRootFile(data){
+    writeRootFile(data) {
         data += '\n';
-        fs.writeFileSync(this.workerDir + "origin1"  + ".js", data);
+        fs.writeFileSync(this.workerDir + "origin1" + ".js", data);
     },
-    eraseOriginFile(data=""){
-        if(data !== "")
+    eraseOriginFile(data = "") {
+        if (data !== "")
             data += '\n';
         fs.writeFileSync(this.originFile, data);
     },
-    updateBoxedFile(code){
+    updateBoxedFile(code) {
         this.fs.appendFileSync(this.boxedFile, code);
     },
-    updateOriginFile(code){
+    updateOriginFile(code) {
         this.fs.appendFileSync(this.originFile, code);
         this.fs.appendFileSync(this.errorFile, code);
     },
-    debugCode(nodeStack){
+    debugCode(nodeStack) {
         let size = nodeStack.length;
-        let resultString  = this.startLine;
-        let i=0;
-        while(size--){
+        let resultString = this.startLine;
+        let i = 0;
+        while (size--) {
             let node = nodeStack[i++];
             let code = this.escodegen.generate(node);
             resultString += code + ";";
@@ -57,11 +57,11 @@ const CodeRecorder = {
         }
         this.fs.appendFileSync(this.errorFile, resultString);
     },
-    backupCode(nodeStack){
+    backupCode(nodeStack) {
         let size = nodeStack.length;
-        let resultString  = '';
-        let i=0;
-        while(size--){
+        let resultString = '';
+        let i = 0;
+        while (size--) {
             let node = nodeStack[i++].origin;
             let code = this.escodegen.generate(node);
             resultString += code + ";";
@@ -69,16 +69,16 @@ const CodeRecorder = {
         }
         this.fs.writeFileSync(this.backupFile, resultString);
     },
-    startLine:"\n\/\/<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n",
-    endLine:"\n\/\/>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n",
-    fs:fs,
-    originFile:"",
-    rootFile:"",
-    escodegen:escodegen,
+    startLine: "\n\/\/<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n",
+    endLine: "\n\/\/>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n",
+    fs: fs,
+    originFile: "",
+    rootFile: "",
+    escodegen: escodegen,
 };
 
 const Recorder = {
-    CodeRecorder:CodeRecorder,
+    CodeRecorder: CodeRecorder,
 };
 
 module.exports = Recorder;
